@@ -8,4 +8,9 @@ import { createApp } from "vue";
 import naive from "naive-ui";
 
 import App from "./App.vue";
-createApp(App).use(naive).mount("#app");
+import { createPinia } from "pinia";
+
+const pinia = createPinia();
+const app = createApp(App);
+
+app.use(pinia).use(naive).mount("#app");
