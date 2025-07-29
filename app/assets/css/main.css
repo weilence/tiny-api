@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+[role="dialog"] .button-group {
+    @apply flex w-full justify-end;
+}
+
+.button-group {
+    @apply space-x-2
+}
+
+.button {
+    @apply px-4 rounded;
+}
