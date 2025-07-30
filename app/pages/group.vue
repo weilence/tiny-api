@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { ModalCreateGroup, ModalCreateProject } from '#components';
+import { ModalGroupDetail, ModalProjectDetail } from '#components';
 
-const { data: groups } = await useFetch<GroupQueryRes[]>('/api/group');
+const groups = ref<GroupQueryRes[]>([]);
 const projects = ref<ProjectQueryRes[]>([]);
-
 const selectedGroup = ref<string | null>(null);
 
-const selectGroup = async (groupId: string) => {
+const loadGroups = async () => {
+  const res = await $fetch<ProjectQueryRes[]>(`/api/group`);
+  groups.value = res;
+};
+
+const loadGroup = async (groupId: string) => {
   selectedGroup.value = groupId;
   const res = await $fetch<ProjectQueryRes[]>(`/api/project`, {
     query: { groupId },
@@ -16,14 +20,53 @@ const selectGroup = async (groupId: string) => {
 
 const overlay = useOverlay();
 
-const modalCreateGroup = overlay.create(ModalCreateGroup);
+const modalGroupDetail = overlay.create(ModalGroupDetail);
 const createGroup = async () => {
-  const instance = modalCreateGroup.open();
-  await instance.result;
+  const instance = modalGroupDetail.open();
+  if (await instance.result) {
+    await loadGroups();
+  }
+};
+
+const editGroup = async (group: GroupQueryRes) => {
+  const instance = modalGroupDetail.open({
+    mode: 'edit',
+    groupData: group,
+  });
+  if (await instance.result) {
+    await loadGroups();
+  }
+};
+
+const deleteGroup = async (groupId: string) => {
+  const confirm = window.confirm('Are you sure you want to delete this group?');
+  if (!confirm) return;
+
+  try {
+    await $fetch(`/api/group/${groupId}`, {
+      method: 'DELETE',
+    });
+    toast.add({
+      title: 'Group deleted successfully',
+      color: 'success',
+      duration: 3000,
+    });
+    if (selectedGroup.value === groupId) {
+      selectedGroup.value = null;
+      projects.value = [];
+    }
+    await loadGroups();
+  } catch {
+    toast.add({
+      title: 'Failed to delete group',
+      color: 'error',
+      duration: 3000,
+    });
+  }
 };
 
 const toast = useToast();
-const modalCreateProject = overlay.create(ModalCreateProject);
+const modalProjectDetail = overlay.create(ModalProjectDetail);
 const createProject = async () => {
   const groupId = selectedGroup.value;
   if (!groupId) {
@@ -35,15 +78,55 @@ const createProject = async () => {
     return;
   }
 
-  const instance = modalCreateProject.open({
+  const instance = modalProjectDetail.open({
     groupId: groupId,
   });
-  await instance.result;
+  if (await instance.result) {
+    await loadGroup(groupId);
+  }
+};
+
+const editProject = async (project: ProjectQueryRes) => {
+  const instance = modalProjectDetail.open({
+    mode: 'edit',
+    projectData: project,
+    groupId: selectedGroup.value!,
+  });
+  if (await instance.result) {
+    await loadGroup(selectedGroup.value!);
+  }
+};
+
+const deleteProject = async (projectId: string) => {
+  const confirm = window.confirm('Are you sure you want to delete this project?');
+  if (!confirm) return;
+
+  try {
+    await $fetch(`/api/project/${projectId}`, {
+      method: 'DELETE' as any,
+    });
+    toast.add({
+      title: 'Project deleted successfully',
+      color: 'success',
+      duration: 3000,
+    });
+    await loadGroup(selectedGroup.value!);
+  } catch {
+    toast.add({
+      title: 'Failed to delete project',
+      color: 'error',
+      duration: 3000,
+    });
+  }
 };
 
 const navigateToProject = (projectId: string) => {
   navigateTo(`/project/${projectId}`);
 };
+
+onMounted(async () => {
+  await loadGroups();
+});
 </script>
 
 <template>
@@ -70,16 +153,39 @@ const navigateToProject = (projectId: string) => {
                   group.id == selectedGroup,
                 'border border-transparent': group.id != selectedGroup,
               }"
-              @click="selectGroup(group.id)"
+              @click="loadGroup(group.id)"
             >
-              <div class="flex items-center justify-between">
-                <span
-                  class="font-medium"
-                  :class="group.id == selectedGroup ? 'text-primary-600 dark:text-primary-400' : ''"
-                >
-                  {{ group.name }}
-                </span>
-                <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary-500 rounded-full" />
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-2">
+                    <span
+                      class="font-medium"
+                      :class="group.id == selectedGroup ? 'text-primary-600 dark:text-primary-400' : ''"
+                    >
+                      {{ group.name }}
+                    </span>
+                    <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0" />
+                  </div>
+                  <p v-if="group.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                    {{ group.description }}
+                  </p>
+                </div>
+                <div v-if="group.id == selectedGroup" class="flex items-center space-x-1 ml-2 flex-shrink-0">
+                  <UButton
+                    icon="i-heroicons-pencil-square"
+                    size="xs"
+                    color="neutral"
+                    variant="ghost"
+                    @click.stop="editGroup(group)"
+                  />
+                  <UButton
+                    icon="i-heroicons-trash"
+                    size="xs"
+                    color="error"
+                    variant="ghost"
+                    @click.stop="deleteGroup(group.id)"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -91,7 +197,9 @@ const navigateToProject = (projectId: string) => {
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-lg font-semibold">Project</h2>
-              <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createProject"> New Project </UButton>
+              <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createProject">
+                New Project
+              </UButton>
             </div>
           </template>
 
@@ -99,9 +207,26 @@ const navigateToProject = (projectId: string) => {
             <div
               v-for="project in projects"
               :key="project.id"
-              class="flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md group"
+              class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md group"
               @click="navigateToProject(project.id)"
             >
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                <UButton
+                  icon="i-heroicons-pencil-square"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  @click.stop="editProject(project)"
+                />
+                <UButton
+                  icon="i-heroicons-trash"
+                  size="xs"
+                  color="error"
+                  variant="ghost"
+                  @click.stop="deleteProject(project.id)"
+                />
+              </div>
+              
               <h3 class="text-sm font-medium text-center mb-1 line-clamp-2">
                 {{ project.name }}
               </h3>

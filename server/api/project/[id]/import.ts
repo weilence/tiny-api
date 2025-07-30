@@ -183,6 +183,7 @@ function convertSchemaToParameter(schema: DeepExcludeRef<OpenAPIV3.SchemaObject>
       required: false,
       enabled: true,
       isArray: false,
+      options: schema.enum,
     };
   }
 }

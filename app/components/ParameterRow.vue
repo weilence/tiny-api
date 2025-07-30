@@ -43,6 +43,14 @@ const isExpanded = (nodeId: string) => {
 
 const nodeId = getNodeId(props.parameter, props.parentPath);
 const hasChildren = computed(() => props.parameter.children && props.parameter.children.length > 0);
+const text: string[] = [];
+if (props.parameter.options) {
+  text.push(`枚举值: ${props.parameter.options.join(', ')}`);
+}
+if (props.parameter.description) {
+  text.push(props.parameter.description);
+}
+const description = text.length > 0 ? text.join('\b') : '';
 
 // Auto-expand nodes with children on mount
 onMounted(() => {
@@ -110,10 +118,11 @@ onMounted(() => {
       </div>
 
       <!-- Required -->
-      <div class="py-3 px-4 w-20">
+      <div class="py-3 px-4 w-30 space-x-1">
         <UBadge :color="parameter.required ? 'error' : 'neutral'" variant="soft" size="sm">
           {{ parameter.required ? '必填' : '可选' }}
         </UBadge>
+        <UBadge v-if="parameter.options" color="primary" variant="soft" size="sm"> 枚举 </UBadge>
       </div>
 
       <!-- Value -->
@@ -126,12 +135,12 @@ onMounted(() => {
       <!-- Description -->
       <div class="py-3 px-4 flex-1 min-w-32">
         <UTooltip
-          v-if="parameter.description && parameter.description !== '-'"
-          :text="parameter.description"
+          v-if="description && description !== '-'"
+          :text="description"
           :popper="{ placement: 'top' }"
         >
           <span class="text-sm text-gray-600 dark:text-gray-400 block truncate">
-            {{ parameter.description }}
+            {{ description }}
           </span>
         </UTooltip>
         <span v-else class="text-sm text-gray-600 dark:text-gray-400"> - </span>

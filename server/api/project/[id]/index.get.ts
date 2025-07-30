@@ -15,5 +15,9 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  return project;
+  project?.endpoints.sort((a, b) => {
+    return a.path.localeCompare(b.path) || a.method.localeCompare(b.method);
+  });
+
+  return project as ProjectGetRes | null;
 });

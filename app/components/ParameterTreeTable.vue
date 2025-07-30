@@ -32,8 +32,8 @@ const getNodeId = (param: Parameter, parentPath: string = '') => {
         <div class="py-3 px-4 w-32">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">类型</span>
         </div>
-        <div class="py-3 px-4 w-20">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">必填</span>
+        <div class="py-3 px-4 w-30">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">属性</span>
         </div>
         <div class="py-3 px-4 w-40">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">示例值</span>

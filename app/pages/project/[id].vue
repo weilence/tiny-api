@@ -1,15 +1,55 @@
 <script setup lang="ts">
-import { ModalImportApi, ParameterTreeTable } from '#components';
+import { ModalImportApi, ParameterTreeTable, TreeRoot } from '#components';
 
 const route = useRoute();
+const apiDetail = ref<Serialized<ProjectGetResEndpoint>>();
+const endpoints = ref<Array<Serialized<ProjectGetResEndpoint>>>([]);
+const searchQuery = ref('');
+const filteredEndpoints = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return endpoints.value;
+  }
+
+  const query = searchQuery.value.toLowerCase();
+  return endpoints.value.filter(
+    (endpoint) =>
+      endpoint.name.toLowerCase().includes(query) ||
+      endpoint.path.toLowerCase().includes(query) ||
+      endpoint.method.toLowerCase().includes(query)
+  );
+});
+
+// 高亮搜索关键词的辅助函数
+const getHighlightedText = (text: string, query: string) => {
+  if (!query.trim()) return [{ text, highlight: false }];
+
+  const regex = new RegExp(`(${query})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => ({
+    text: part,
+    highlight: index % 2 === 1 && part.toLowerCase() === query.toLowerCase(),
+  }));
+};
+
+const loadProject = async () => {
+  const project = await $fetch(`/api/project/${projectId}`);
+
+  endpoints.value = project?.endpoints ?? [];
+};
+
 const projectId = route.params.id;
 
-const colors = {
-  GET: 'success' as const,
-  POST: 'primary' as const,
-  PUT: 'warning' as const,
-  DELETE: 'error' as const,
-  PATCH: 'secondary' as const,
+const getColor = (method: string) => {
+  const colors = {
+    get: 'success' as const,
+    post: 'primary' as const,
+    put: 'warning' as const,
+    delete: 'error' as const,
+    patch: 'secondary' as const,
+  } as const;
+
+  return colors[method.toLowerCase() as keyof typeof colors] || 'neutral';
 };
 
 const toast = useToast();
@@ -85,36 +125,18 @@ const sendRequest = () => {
 };
 
 const overlay = useOverlay();
-const modal = overlay.create(ModalImportApi);
+const modalImportApi = overlay.create(ModalImportApi);
 const importApi = async () => {
-  const instance = modal.open({
+  const instance = modalImportApi.open({
     projectId: projectId as string,
   });
-  await instance.result;
+  if (await instance.result) {
+    await loadProject();
+  }
 };
 
-const apiDetail = ref<ApiDetail>();
-const treeItems = ref<Array<ApiDetail & { children?: [] }>>([]);
 onMounted(async () => {
-  const project = await $fetch(`/api/project/${projectId}`);
-
-  const v =
-    project?.endpoints.map((endpoint) => ({
-      id: endpoint.id,
-      path: endpoint.path,
-      method: endpoint.method.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-      name: endpoint.name || 'Unnamed API',
-      tags: endpoint.tags || [],
-      body: endpoint.body as unknown as Parameter,
-      description: endpoint.description || '',
-      headers: endpoint.headers as unknown as Parameter[],
-      queryParams: endpoint.queryParams as unknown as Parameter[],
-      updatedAt: new Date(endpoint.updatedAt),
-      response: null,
-    })) || [];
-
-  treeItems.value = v;
-  apiDetail.value = v[0];
+  await loadProject();
 });
 </script>
 
@@ -130,10 +152,30 @@ onMounted(async () => {
 
     <div class="flex gap-6">
       <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
-        <UCard class="sticky top-18" :ui="{ body: 'p-2 sm:p-2 h-full overflow-y-auto max-h-[calc(100vh-14rem)]' }">
+        <UCard class="sticky top-18" :ui="{ body: 'p-2 sm:p-2 h-full' }">
           <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
               <h2 class="text-lg font-semibold">API</h2>
+              <div class="flex-1">
+                <UInput
+                  v-model="searchQuery"
+                  placeholder="搜索接口名称、路径或方法"
+                  icon="i-heroicons-magnifying-glass"
+                  class="w-full"
+                  size="sm"
+                  :trailing="false"
+                >
+                  <template v-if="searchQuery" #trailing>
+                    <UButton
+                      icon="i-heroicons-x-mark"
+                      size="xs"
+                      color="neutral"
+                      variant="ghost"
+                      @click="searchQuery = ''"
+                    />
+                  </template>
+                </UInput>
+              </div>
               <div class="flex space-x-2">
                 <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="importApi">
                   Import
@@ -142,21 +184,71 @@ onMounted(async () => {
               </div>
             </div>
           </template>
-
-          <UTree
-            value-key="id"
-            label-key="name"
-            :items="treeItems"
-            @update:model-value="(v: any) => (apiDetail = v)"
+          <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-gray-500 mt-1">找到 {{ filteredEndpoints.length }} 个结果</div>
+          <TreeRoot
+            v-if="filteredEndpoints.length > 0"
+            class="max-h-[calc(100vh-18rem)] overflow-y-auto"
+            :get-key="(m) => m.id"
+            :items="filteredEndpoints"
+            @update:model-value="(e: any) => apiDetail = e"
           >
-            <template #item-leading="{ item }">
-              <template v-if="!item.children">
-                <UBadge :color="colors[item.method]" variant="solid" size="sm" class="w-12 flex justify-center">
-                  {{ item.method || 'GET' }}
-                </UBadge>
-              </template>
-            </template>
-          </UTree>
+            <TreeVirtualizer
+              v-slot="{ item }"
+              :estimate-size="28"
+              :text-content="(item) => item.value.name"
+              :overscan="8"
+            >
+              <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isIndeterminate }" class="w-full">
+                <div
+                  class="flex items-center cursor-pointer space-x-2 hover:bg-gray-200 py-0.5 min-w-0"
+                  :class="{
+                    'bg-gray-100': isSelected,
+                  }"
+                >
+                  <UCheckbox v-if="item.hasChildren" :model-value="isIndeterminate ? 'indeterminate' : isSelected" />
+                  <UBadge
+                    :color="getColor(item.value.method)"
+                    variant="solid"
+                    size="sm"
+                    class="w-12 flex justify-center"
+                  >
+                    {{ item.value.method.toUpperCase() || 'GET' }}
+                  </UBadge>
+                  <span
+                    :class="{ 'text-primary': isSelected }"
+                    class="truncate flex-1 min-w-0"
+                    :title="item.value.name"
+                  >
+                    <template
+                      v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
+                      :key="partIndex"
+                    >
+                      <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
+                        part.text
+                      }}</mark>
+                      <template v-else>{{ part.text }}</template>
+                    </template>
+                  </span>
+                </div>
+              </TreeItem>
+            </TreeVirtualizer>
+          </TreeRoot>
+
+          <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
+            <div class="text-center">
+              <UIcon name="i-heroicons-magnifying-glass" class="mx-auto h-8 w-8 text-gray-400 mb-2" />
+              <p class="text-sm text-gray-500">没有找到匹配的接口</p>
+              <p class="text-xs text-gray-400 mt-1">尝试调整搜索关键词</p>
+            </div>
+          </div>
+
+          <div v-else-if="endpoints.length === 0" class="flex items-center justify-center py-8">
+            <div class="text-center">
+              <UIcon name="i-heroicons-document-plus" class="mx-auto h-8 w-8 text-gray-400 mb-2" />
+              <p class="text-sm text-gray-500">暂无API接口</p>
+              <p class="text-xs text-gray-400 mt-1">点击上方"Import"或"New"按钮添加接口</p>
+            </div>
+          </div>
         </UCard>
       </div>
 
@@ -165,8 +257,8 @@ onMounted(async () => {
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
-                <UBadge :color="colors[apiDetail.method]" variant="solid" size="sm">
-                  {{ apiDetail.method }}
+                <UBadge :color="getColor(apiDetail.method)" variant="solid" size="sm">
+                  {{ apiDetail.method.toUpperCase() }}
                 </UBadge>
                 <h2 class="text-lg font-semibold">{{ apiDetail.name }}</h2>
               </div>
@@ -175,11 +267,11 @@ onMounted(async () => {
 
             <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div>
-                <span class="font-medium">Path:</span>
+                <span class="font-medium mr-2">Path:</span>
                 <span class="text-blue-600 dark:text-blue-400">{{ apiDetail.path }}</span>
               </div>
               <div class="flex items-center space-x-2">
-                <span class="font-medium">Creator:</span>
+                <span class="font-medium mr-2">Creator:</span>
                 <UAvatar size="2xs" src="https://avatars.githubusercontent.com/u/1" />
                 <span>admin</span>
               </div>
@@ -187,11 +279,11 @@ onMounted(async () => {
 
             <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div>
-                <span class="font-medium">Status:</span>
+                <span class="font-medium mr-2">Status:</span>
                 <UBadge color="success" variant="soft" size="sm">Published</UBadge>
               </div>
               <div>
-                <span class="font-medium">Updated At:</span>
+                <span class="font-medium mr-2">Updated At:</span>
                 <span>{{ apiDetail.updatedAt }}</span>
               </div>
             </div>

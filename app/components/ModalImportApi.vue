@@ -38,7 +38,7 @@ const state = reactive<Schema>({
   file: undefined,
 });
 
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   const formData = new FormData();
@@ -53,7 +53,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     body: formData,
   });
 
-  emit('close');
+  emit('close', true);
 };
 </script>
 
@@ -83,7 +83,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     <template #footer>
       <div class="button-group">
         <UButton class="button" form="import-api-form" type="submit">Ok</UButton>
-        <UButton class="button" color="secondary" @click="$emit('close')">Cancel</UButton>
+        <UButton class="button" color="secondary" @click="$emit('close', false)">Cancel</UButton>
       </div>
     </template>
   </UModal>
