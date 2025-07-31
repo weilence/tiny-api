@@ -342,7 +342,7 @@ onMounted(async () => {
                         class="border-t border-gray-200 dark:border-gray-700"
                       >
                         <td class="px-4 py-2 text-blue-600 dark:text-blue-400">{{ param.key }}</td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">string</td>
+                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">{{ param.type }}{{ param.isArray ? '[]' : '' }}</td>
                         <td class="px-4 py-2">
                           <UBadge :color="param.enabled ? 'error' : 'neutral'" variant="soft" size="sm">
                             {{ param.enabled ? '必填' : '可选' }}

@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
     }
   } else if ('swagger' in spec && typeof spec.swagger === 'string') {
     if (spec.swagger.startsWith('2')) {
-      endpoints = handleSwaggerSpec(spec, projectId);
+      endpoints = handleSwaggerSpec(spec as OpenAPIV2.Document, projectId);
     } else {
       console.error('Unsupported Swagger version:', spec.swagger);
       return { error: 'Unsupported Swagger version' };
@@ -99,7 +99,7 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
   for (const [path, methods] of Object.entries(spec.paths!)) {
     for (const [method, v] of Object.entries(methods!)) {
       if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
-      const operation = v as DeepExcludeRef<OpenAPIV3.OperationObject>;
+      const operation = v as Schema<OpenAPIV3.OperationObject>;
       const headers: Parameter[] = [];
       const queryParams: Parameter[] = [];
       for (const parameter of operation.parameters || []) {
@@ -149,7 +149,129 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
   return endpoints;
 }
 
-function convertSchemaToParameter(schema: DeepExcludeRef<OpenAPIV3.SchemaObject>): Parameter {
+function handleSwaggerSpec(spec: OpenAPIV2.Document, projectId: string) {
+  const endpoints: Prisma.EndpointCreateManyInput[] = [];
+
+  for (const [path, methods] of Object.entries(spec.paths || {})) {
+    for (const [method, operation] of Object.entries(methods || {})) {
+      if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
+
+      const op = operation as Schema<OpenAPIV2.OperationObject>;
+      const headers: Parameter[] = [];
+      const queryParams: Parameter[] = [];
+      const formDataParams: Parameter[] = [];
+      let body: Parameter | null = null;
+
+      // 处理参数
+      for (const param of op.parameters || []) {
+        if (param.in === 'body') {
+          if (param.schema) {
+            body = convertSwaggerSchemaToParameter(param.schema);
+          }
+        } else {
+          const generalParam = param as Schema<OpenAPIV2.GeneralParameterObject>;
+          const p: Parameter = {
+            key: generalParam.name,
+            value: '',
+            type: generalParam.type || 'string',
+            description: generalParam.description || '',
+            required: generalParam.required || false,
+            enabled: true,
+            options: generalParam.enum,
+            isArray: generalParam.type === 'array',
+          };
+
+          if (p.type === 'array') {
+            p.type = generalParam.items?.type || 'string';
+          }
+
+          switch (generalParam.in) {
+            case 'query':
+              queryParams.push(p);
+              break;
+            case 'header':
+              headers.push(p);
+              break;
+            case 'formData':
+              formDataParams.push(p);
+              break;
+            // path参数通常不需要在API测试工具中单独处理
+          }
+        }
+      }
+
+      // 如果有formData参数，将它们转换为body
+      if (formDataParams.length > 0) {
+        body = {
+          key: '',
+          value: '',
+          type: 'object',
+          description: 'Form data parameters',
+          required: false,
+          enabled: true,
+          isArray: false,
+          children: formDataParams,
+        };
+      }
+
+      const endpoint = {
+        projectId: projectId,
+        method: method,
+        path: path,
+        tags: op.tags || [],
+        name: op.summary || '',
+        description: op.description || '',
+        headers: headers as unknown as Prisma.InputJsonValue,
+        queryParams: queryParams as unknown as Prisma.InputJsonValue,
+        body: body as unknown as Prisma.InputJsonValue,
+      };
+      endpoints.push(endpoint);
+    }
+  }
+
+  return endpoints;
+}
+
+// 用于处理Swagger 2.0的schema转换
+function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): Parameter {
+  if (schema.type === 'object') {
+    const children: Parameter[] = [];
+    for (const [key, subSchema] of Object.entries(schema.properties || {})) {
+      const subParameter = convertSwaggerSchemaToParameter(subSchema);
+      subParameter.key = key;
+      subParameter.required = schema.required?.includes(key) || false;
+      children.push(subParameter);
+    }
+
+    return {
+      key: '',
+      value: '',
+      type: 'object',
+      description: schema.description || '',
+      required: false,
+      enabled: true,
+      children: children,
+      isArray: false,
+    };
+  } else if (schema.type === 'array') {
+    const subParameter = convertSwaggerSchemaToParameter(schema.items as OpenAPIV2.ItemsObject);
+    subParameter.isArray = true;
+    return subParameter;
+  } else {
+    return {
+      key: schema.title || '',
+      value: '',
+      type: Array.isArray(schema.type) ? schema.type[0] || 'string' : schema.type || 'string',
+      description: schema.description || '',
+      required: false,
+      enabled: true,
+      isArray: false,
+      options: schema.enum,
+    };
+  }
+}
+
+function convertSchemaToParameter(schema: Schema<OpenAPIV3.SchemaObject>): Parameter {
   if (schema.type === 'object') {
     const children: Parameter[] = [];
     for (const [key, subSchema] of Object.entries(schema.properties || {})) {
@@ -186,29 +308,4 @@ function convertSchemaToParameter(schema: DeepExcludeRef<OpenAPIV3.SchemaObject>
       options: schema.enum,
     };
   }
-}
-
-// 判断一个类型是否是 $ref
-type IsRef<T> = T extends { $ref: any } ? true : false;
-
-// 从联合类型中过滤掉含有 $ref 的部分
-type FilterOutRef<T> = T extends any ? (IsRef<T> extends true ? never : T) : never;
-
-// 递归处理
-type DeepExcludeRef<T> =
-  // 如果是数组，递归处理元素，并过滤 $ref
-  T extends (infer U)[]
-    ? DeepExcludeRef<FilterOutRef<U>>[]
-    : // 如果是联合类型，过滤 $ref 并递归处理
-    T extends object
-    ? IsRef<T> extends true
-      ? never
-      : {
-          [K in keyof T]: DeepExcludeRef<T[K]>;
-        }
-    : // 其他类型原样返回
-      T;
-
-function handleSwaggerSpec(_spec: OpenAPIV2.Document, _projectId: string) {
-  return [];
 }
