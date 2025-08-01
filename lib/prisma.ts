@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../.prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import '@prisma/client/runtime/query_compiler_bg.postgresql.wasm';
 
 const prismaClientSingleton = () => {
   const connectionString = `${process.env.DATABASE_URL}`;
