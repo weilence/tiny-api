@@ -5,6 +5,10 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/ui', '@nuxt/eslint', '@nuxt/image', '@nuxt/test-utils', 'reka-ui/nuxt'],
 
+  pages: {
+    pattern: ['**/*.vue', '!**/components/**'],
+  },
+
   css: ['~/assets/css/main.css'],
 
   ui: {
