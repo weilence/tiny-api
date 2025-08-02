@@ -2,7 +2,7 @@
 import SwaggerClient from 'swagger-client';
 import type { OpenAPI, OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import prisma from '~~/lib/prisma';
-import type { Prisma } from '@prisma/client';
+import { DbNull } from '~~/.prisma/internal/prismaNamespace';
 
 export async function parseMultipartObject<T>(event: any) {
   const parts = await readMultipartFormData(event);
@@ -56,54 +56,104 @@ export default defineEventHandler(async (event) => {
     apiDoc = await SwaggerClient({ spec: obj });
   }
 
-  let endpoints: Prisma.EndpointCreateManyInput[] = [];
+  let specEndpoints: SpecEndpoint[] = [];
   const spec: OpenAPI.Document = apiDoc.spec;
   if ('openapi' in spec && typeof spec.openapi === 'string') {
     const version = spec.openapi;
     if (version.startsWith('3.1')) {
-      endpoints = handleOpenApi31Spec(spec as OpenAPIV3_1.Document, projectId);
+      specEndpoints = handleOpenApi31Spec(spec as OpenAPIV3_1.Document);
     } else if (version.startsWith('3.0')) {
-      endpoints = handleOpenApi30Spec(spec as OpenAPIV3.Document, projectId);
+      specEndpoints = handleOpenApi30Spec(spec as OpenAPIV3.Document);
     } else {
       console.error('Unsupported OpenAPI version:', version);
       return { error: 'Unsupported OpenAPI version' };
     }
   } else if ('swagger' in spec && typeof spec.swagger === 'string') {
     if (spec.swagger.startsWith('2')) {
-      endpoints = handleSwaggerSpec(spec as OpenAPIV2.Document, projectId);
+      specEndpoints = handleSwaggerSpec(spec as OpenAPIV2.Document);
     } else {
       console.error('Unsupported Swagger version:', spec.swagger);
       return { error: 'Unsupported Swagger version' };
     }
   }
 
+  const g = new Map<string, SpecEndpoint[]>();
+  for (const m of specEndpoints) {
+    const groupKey = m.tags.length > 0 ? m.tags[0] : 'default';
+    if (!g.has(groupKey)) {
+      g.set(groupKey, []);
+    }
+    g.get(groupKey)!.push(m);
+  }
+
   await prisma.$transaction(async (tx) => {
+    const groupIds = (
+      await tx.endpointGroup.findMany({
+        where: {
+          projectId: projectId,
+        },
+        select: {
+          id: true,
+        },
+      })
+    ).map((p) => p.id);
+
     await tx.endpoint.deleteMany({
       where: {
+        groupId: {
+          in: groupIds,
+        },
+      },
+    });
+
+    await tx.endpointGroup.deleteMany({
+      where: {
+        id: {
+          in: groupIds,
+        },
+      },
+    });
+
+    const groupCreateReturns = await tx.endpointGroup.createManyAndReturn({
+      data: Array.from(g.keys()).map((key) => ({
+        name: key,
         projectId: projectId,
+      })),
+      select: {
+        id: true,
+        name: true,
       },
     });
 
     await tx.endpoint.createMany({
-      data: endpoints,
+      data: groupCreateReturns.flatMap((group) => {
+        return g.get(group.name)!.map((endpoint) => ({
+          ...endpoint,
+          headers: endpoint.headers,
+          queryParams: endpoint.queryParams,
+          body: endpoint.body || DbNull,
+          groupId: group.id,
+        }));
+      }),
     });
   });
 });
 
-function handleOpenApi31Spec(_spec: OpenAPIV3_1.Document, _projectId: string) {
+function handleOpenApi31Spec(_spec: OpenAPIV3_1.Document) {
   return [];
 }
 
-function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
-  const endpoints: Prisma.EndpointCreateManyInput[] = [];
+function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
+  const endpoints: SpecEndpoint[] = [];
+
   for (const [path, methods] of Object.entries(spec.paths!)) {
     for (const [method, v] of Object.entries(methods!)) {
       if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
       const operation = v as Schema<OpenAPIV3.OperationObject>;
-      const headers: Parameter[] = [];
-      const queryParams: Parameter[] = [];
+      const headers: PrismaJson.Parameter[] = [];
+      const queryParams: PrismaJson.Parameter[] = [];
       for (const parameter of operation.parameters || []) {
-        const p = {} as Parameter;
+        const p = {} as PrismaJson.Parameter;
         p.key = parameter.name;
         p.value = '';
         p.description = parameter.description || '';
@@ -123,7 +173,7 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
         }
       }
 
-      let body: Parameter | null = null;
+      let body: PrismaJson.Parameter | null = null;
       if (operation.requestBody) {
         const schema = operation.requestBody.content?.['application/json']?.schema;
         if (schema) {
@@ -132,15 +182,14 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
       }
 
       const endpoint = {
-        projectId: projectId,
-        method: method,
+        method: method as PrismaJson.HttpMethod,
         path: path,
         tags: operation.tags || [],
         name: operation.summary || '',
         description: operation.description || '',
-        headers: headers as unknown as Prisma.InputJsonValue,
-        queryParams: queryParams as unknown as Prisma.InputJsonValue,
-        body: body as unknown as Prisma.InputJsonValue,
+        headers: headers,
+        queryParams: queryParams,
+        body: body,
       };
       endpoints.push(endpoint);
     }
@@ -149,18 +198,29 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document, projectId: string) {
   return endpoints;
 }
 
-function handleSwaggerSpec(spec: OpenAPIV2.Document, projectId: string) {
-  const endpoints: Prisma.EndpointCreateManyInput[] = [];
+interface SpecEndpoint {
+  method: PrismaJson.HttpMethod;
+  path: string;
+  tags: string[];
+  name: string;
+  description: string;
+  headers: PrismaJson.Parameter[];
+  queryParams: PrismaJson.Parameter[];
+  body: PrismaJson.Parameter | null;
+}
+
+function handleSwaggerSpec(spec: OpenAPIV2.Document) {
+  const endpoints: SpecEndpoint[] = [];
 
   for (const [path, methods] of Object.entries(spec.paths || {})) {
     for (const [method, operation] of Object.entries(methods || {})) {
       if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
 
       const op = operation as Schema<OpenAPIV2.OperationObject>;
-      const headers: Parameter[] = [];
-      const queryParams: Parameter[] = [];
-      const formDataParams: Parameter[] = [];
-      let body: Parameter | null = null;
+      const headers: PrismaJson.Parameter[] = [];
+      const queryParams: PrismaJson.Parameter[] = [];
+      const formDataParams: PrismaJson.Parameter[] = [];
+      let body: PrismaJson.Parameter | null = null;
 
       // 处理参数
       for (const param of op.parameters || []) {
@@ -170,7 +230,7 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document, projectId: string) {
           }
         } else {
           const generalParam = param as Schema<OpenAPIV2.GeneralParameterObject>;
-          const p: Parameter = {
+          const p: PrismaJson.Parameter = {
             key: generalParam.name,
             value: '',
             type: generalParam.type || 'string',
@@ -215,15 +275,14 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document, projectId: string) {
       }
 
       const endpoint = {
-        projectId: projectId,
-        method: method,
+        method: method as PrismaJson.HttpMethod,
         path: path,
         tags: op.tags || [],
         name: op.summary || '',
         description: op.description || '',
-        headers: headers as unknown as Prisma.InputJsonValue,
-        queryParams: queryParams as unknown as Prisma.InputJsonValue,
-        body: body as unknown as Prisma.InputJsonValue,
+        headers: headers,
+        queryParams: queryParams,
+        body: body,
       };
       endpoints.push(endpoint);
     }
@@ -233,9 +292,9 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document, projectId: string) {
 }
 
 // 用于处理Swagger 2.0的schema转换
-function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): Parameter {
+function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): PrismaJson.Parameter {
   if (schema.type === 'object') {
-    const children: Parameter[] = [];
+    const children: PrismaJson.Parameter[] = [];
     for (const [key, subSchema] of Object.entries(schema.properties || {})) {
       const subParameter = convertSwaggerSchemaToParameter(subSchema);
       subParameter.key = key;
@@ -271,9 +330,9 @@ function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): Parame
   }
 }
 
-function convertSchemaToParameter(schema: Schema<OpenAPIV3.SchemaObject>): Parameter {
+function convertSchemaToParameter(schema: Schema<OpenAPIV3.SchemaObject>): PrismaJson.Parameter {
   if (schema.type === 'object') {
-    const children: Parameter[] = [];
+    const children: PrismaJson.Parameter[] = [];
     for (const [key, subSchema] of Object.entries(schema.properties || {})) {
       const subParameter = convertSchemaToParameter(subSchema);
       subParameter.key = key;

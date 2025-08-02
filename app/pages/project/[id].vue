@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ModalImportApi, ParameterTreeTable, TreeRoot } from '#components';
+import type { TreeItem } from '@nuxt/ui';
 
 const route = useRoute();
-const apiDetail = ref<Serialized<ProjectGetResEndpoint>>();
-const endpoints = ref<Array<Serialized<ProjectGetResEndpoint>>>([]);
+const apiDetail = ref<Serialized<ProjectGetResEndpoint> | null>(null);
+const endpoints = ref<TreeItem[]>([]);
 const searchQuery = ref('');
 const filteredEndpoints = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -11,13 +12,43 @@ const filteredEndpoints = computed(() => {
   }
 
   const query = searchQuery.value.toLowerCase();
-  return endpoints.value.filter(
-    (endpoint) =>
-      endpoint.name.toLowerCase().includes(query) ||
-      endpoint.path.toLowerCase().includes(query) ||
-      endpoint.method.toLowerCase().includes(query)
-  );
+  return filterEndpoints(endpoints.value, query) as TreeItem[];
 });
+
+const filterEndpoints = (endpoints: TreeItem[], query: string): TreeItem[] => {
+  if (!query.trim()) return endpoints;
+
+  const lowerQuery = query.toLowerCase();
+  const res: TreeItem[] = [];
+  for (const item of endpoints) {
+    const children = filterEndpoints(item.children || [], query);
+    if (item.isFolder && children.length === 0) {
+      continue;
+    } else if (
+      !item.isFolder &&
+      !item.label?.toLowerCase().includes(lowerQuery) &&
+      !item.path?.toLowerCase().includes(lowerQuery) &&
+      !item.method?.toLowerCase().includes(lowerQuery)
+    ) {
+      continue;
+    }
+
+    res.push({
+      ...item,
+      children,
+    });
+  }
+
+  return res;
+};
+
+const selectApi = (v: any) => {
+  if (!v || v.isFolder) {
+    apiDetail.value = null;
+  } else {
+    apiDetail.value = v;
+  }
+};
 
 // 高亮搜索关键词的辅助函数
 const getHighlightedText = (text: string, query: string) => {
@@ -32,10 +63,29 @@ const getHighlightedText = (text: string, query: string) => {
   }));
 };
 
+const convertToTreeItem = (endpoint: Serialized<ProjectGetResEndpointGroup>, level: number): TreeItem => ({
+  ...endpoint,
+  isFolder: true,
+  value: endpoint.id,
+  label: endpoint.name,
+  level,
+  children: endpoint.children
+    .map((c) => convertToTreeItem(c, level + 1))
+    .concat(
+      endpoint.endpoints.map((e) => ({
+        ...e,
+        isFolder: false,
+        value: e.id,
+        label: e.name,
+        level: level + 1,
+      }))
+    ),
+});
+
 const loadProject = async () => {
   const project = await $fetch(`/api/project/${projectId}`);
 
-  endpoints.value = project?.endpoints ?? [];
+  endpoints.value = project?.endpointGroups.map((e) => convertToTreeItem(e, 0)) ?? [];
 };
 
 const projectId = route.params.id;
@@ -184,13 +234,15 @@ onMounted(async () => {
               </div>
             </div>
           </template>
-          <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-gray-500 mt-1">找到 {{ filteredEndpoints.length }} 个结果</div>
+          <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-gray-500 mt-1">
+            找到 {{ filteredEndpoints.length }} 个结果
+          </div>
           <TreeRoot
             v-if="filteredEndpoints.length > 0"
             class="max-h-[calc(100vh-18rem)] overflow-y-auto"
             :get-key="(m) => m.id"
             :items="filteredEndpoints"
-            @update:model-value="(e: any) => apiDetail = e"
+            @update:model-value="selectApi"
           >
             <TreeVirtualizer
               v-slot="{ item }"
@@ -198,37 +250,66 @@ onMounted(async () => {
               :text-content="(item) => item.value.name"
               :overscan="8"
             >
-              <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isIndeterminate }" class="w-full">
+              <TreeItem
+                :key="item._id"
+                v-bind="item.bind"
+                v-slot="{ isSelected, isExpanded }"
+                :level="item.value.level"
+                :style="{ 'padding-left': `${item.level - 0.5}rem` }"
+                class="w-full"
+              >
                 <div
                   class="flex items-center cursor-pointer space-x-2 hover:bg-gray-200 py-0.5 min-w-0"
                   :class="{
                     'bg-gray-100': isSelected,
                   }"
                 >
-                  <UCheckbox v-if="item.hasChildren" :model-value="isIndeterminate ? 'indeterminate' : isSelected" />
-                  <UBadge
-                    :color="getColor(item.value.method)"
-                    variant="solid"
-                    size="sm"
-                    class="w-12 flex justify-center"
-                  >
-                    {{ item.value.method.toUpperCase() || 'GET' }}
-                  </UBadge>
-                  <span
-                    :class="{ 'text-primary': isSelected }"
-                    class="truncate flex-1 min-w-0"
-                    :title="item.value.name"
-                  >
-                    <template
-                      v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
-                      :key="partIndex"
-                    >
-                      <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
-                        part.text
-                      }}</mark>
-                      <template v-else>{{ part.text }}</template>
+                  <template v-if="item.value.isFolder">
+                    <template v-if="item.hasChildren">
+                      <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4 text-gray-600" />
+                      <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4 text-gray-600" />
                     </template>
-                  </span>
+                    <span
+                      :class="{ 'text-primary': isSelected }"
+                      class="truncate flex-1 min-w-0"
+                      :title="item.value.name"
+                    >
+                      <template
+                        v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
+                        :key="partIndex"
+                      >
+                        <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
+                          part.text
+                        }}</mark>
+                        <template v-else>{{ part.text }}</template>
+                      </template>
+                    </span>
+                  </template>
+                  <template v-else>
+                    <UBadge
+                      :color="getColor(item.value.method)"
+                      variant="solid"
+                      size="sm"
+                      class="w-12 flex justify-center"
+                    >
+                      {{ item.value.method.toUpperCase() || 'GET' }}
+                    </UBadge>
+                    <span
+                      :class="{ 'text-primary': isSelected }"
+                      class="truncate flex-1 min-w-0"
+                      :title="item.value.name"
+                    >
+                      <template
+                        v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
+                        :key="partIndex"
+                      >
+                        <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
+                          part.text
+                        }}</mark>
+                        <template v-else>{{ part.text }}</template>
+                      </template>
+                    </span>
+                  </template>
                 </div>
               </TreeItem>
             </TreeVirtualizer>
@@ -342,7 +423,9 @@ onMounted(async () => {
                         class="border-t border-gray-200 dark:border-gray-700"
                       >
                         <td class="px-4 py-2 text-blue-600 dark:text-blue-400">{{ param.key }}</td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">{{ param.type }}{{ param.isArray ? '[]' : '' }}</td>
+                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                          {{ param.type }}{{ param.isArray ? '[]' : '' }}
+                        </td>
                         <td class="px-4 py-2">
                           <UBadge :color="param.enabled ? 'error' : 'neutral'" variant="soft" size="sm">
                             {{ param.enabled ? '必填' : '可选' }}
