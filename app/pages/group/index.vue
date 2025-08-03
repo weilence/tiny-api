@@ -125,146 +125,121 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6">
-    <div class="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
-      <div class="col-span-4">
-        <UCard class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold">Project Group</h2>
-              <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createGroup">
-                New Group
-              </UButton>
-            </div>
-          </template>
-
-          <div class="space-y-2">
-            <div
-              v-for="group in groups"
-              :key="group.id"
-              class="p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-              :class="{
-                'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800':
-                  group.id == selectedGroup,
-                'border border-transparent': group.id != selectedGroup,
-              }"
-              @click="loadGroup(group.id)"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2">
-                    <span
-                      class="font-medium"
-                      :class="group.id == selectedGroup ? 'text-primary-600 dark:text-primary-400' : ''"
-                    >
-                      {{ group.name }}
-                    </span>
-                    <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0" />
-                  </div>
-                  <p v-if="group.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                    {{ group.description }}
-                  </p>
-                </div>
-                <div v-if="group.id == selectedGroup" class="flex items-center space-x-1 ml-2 flex-shrink-0">
-                  <UButton
-                    icon="i-heroicons-pencil-square"
-                    size="xs"
-                    color="neutral"
-                    variant="ghost"
-                    @click.stop="editGroup(group)"
-                  />
-                  <UButton
-                    icon="i-heroicons-trash"
-                    size="xs"
-                    color="error"
-                    variant="ghost"
-                    @click.stop="deleteGroup(group.id)"
-                  />
-                </div>
-              </div>
-            </div>
+  <div class="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
+    <div class="col-span-4">
+      <UCard class="h-full">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Project Group</h2>
+            <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createGroup">
+              New Group
+            </UButton>
           </div>
-        </UCard>
-      </div>
+        </template>
 
-      <div class="col-span-8">
-        <UCard class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold">Project</h2>
-              <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createProject">
-                New Project
-              </UButton>
-            </div>
-          </template>
-
-          <div class="grid grid-cols-6 gap-4 p-4">
-            <div
-              v-for="project in projects"
-              :key="project.id"
-              class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md group"
-              @click="navigateToProject(project.id)"
-            >
-              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+        <div class="space-y-2">
+          <div
+            v-for="group in groups"
+            :key="group.id"
+            class="p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            :class="{
+              'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800':
+                group.id == selectedGroup,
+              'border border-transparent': group.id != selectedGroup,
+            }"
+            @click="loadGroup(group.id)"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-2">
+                  <span
+                    class="font-medium"
+                    :class="group.id == selectedGroup ? 'text-primary-600 dark:text-primary-400' : ''"
+                  >
+                    {{ group.name }}
+                  </span>
+                  <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0" />
+                </div>
+                <p v-if="group.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 break-all">
+                  {{ group.description }}
+                </p>
+              </div>
+              <div v-if="group.id == selectedGroup" class="flex items-center space-x-1 ml-2 flex-shrink-0">
                 <UButton
                   icon="i-heroicons-pencil-square"
                   size="xs"
                   color="neutral"
                   variant="ghost"
-                  @click.stop="editProject(project)"
+                  @click.stop="editGroup(group)"
                 />
                 <UButton
                   icon="i-heroicons-trash"
                   size="xs"
                   color="error"
                   variant="ghost"
-                  @click.stop="deleteProject(project.id)"
+                  @click.stop="deleteGroup(group.id)"
                 />
               </div>
-
-              <!-- Project Icon -->
-              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-                <UIcon
-                  v-if="project.icon"
-                  :name="project.icon"
-                  class="w-6 h-6 text-gray-600 dark:text-gray-300"
-                />
-                <UIcon
-                  v-else
-                  name="i-heroicons-folder"
-                  class="w-6 h-6 text-gray-400"
-                />
-              </div>
-
-              <h3 class="text-sm font-medium text-center mb-1 line-clamp-2">
-                {{ project.name }}
-              </h3>
-
-              <p class="text-xs text-gray-500 dark:text-gray-400 text-center line-clamp-1">
-                {{ project.description }}
-              </p>
             </div>
           </div>
-        </UCard>
-      </div>
+        </div>
+      </UCard>
+    </div>
+
+    <div class="col-span-8">
+      <UCard class="h-full">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Project</h2>
+            <UButton icon="i-heroicons-plus" size="sm" color="primary" variant="solid" @click="createProject">
+              New Project
+            </UButton>
+          </div>
+        </template>
+
+        <div class="grid grid-cols-6 gap-4 p-4">
+          <div
+            v-for="project in projects"
+            :key="project.id"
+            class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md group"
+            @click="navigateToProject(project.id)"
+          >
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+              <UButton
+                icon="i-heroicons-pencil-square"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                @click.stop="editProject(project)"
+              />
+              <UButton
+                icon="i-heroicons-trash"
+                size="xs"
+                color="error"
+                variant="ghost"
+                @click.stop="deleteProject(project.id)"
+              />
+            </div>
+
+            <!-- Project Icon -->
+            <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
+              <UIcon v-if="project.icon" :name="project.icon" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
+              <UIcon v-else name="i-heroicons-folder" class="w-6 h-6 text-gray-400" />
+            </div>
+
+            <h3 class="text-sm font-medium text-center mb-1 line-clamp-1 w-full">
+              {{ project.name }}
+            </h3>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400 text-center line-clamp-2 w-fulll break-all">
+              {{ project.description }}
+            </p>
+          </div>
+        </div>
+      </UCard>
     </div>
   </div>
 </template>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 </style>
