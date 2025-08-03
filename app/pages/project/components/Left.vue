@@ -85,28 +85,24 @@ onMounted(async () => {
   await loadProject();
 });
 
-const convertToTreeItem = (endpoint: ProjectGetResEndpointGroup, level: number): TreeItem => ({
+const convertToTreeItem = (endpoint: ProjectGetResEndpointGroup): TreeItem => ({
   ...endpoint,
   isFolder: true,
   value: endpoint.id,
   label: endpoint.name,
-  level,
-  children: endpoint.children
-    .map((c) => convertToTreeItem(c, level + 1))
-    .concat(
-      endpoint.endpoints.map((e) => ({
-        ...e,
-        isFolder: false,
-        value: e.id,
-        label: e.name,
-        level: level + 1,
-      }))
-    ),
+  children: endpoint.children.map(convertToTreeItem).concat(
+    endpoint.endpoints.map((e) => ({
+      ...e,
+      isFolder: false,
+      value: e.id,
+      label: e.name,
+    }))
+  ),
 });
 
 const loadProject = async () => {
   const project = await http.get<ProjectGetRes>(`/project/${props.projectId}`);
-  const res = project?.endpointGroups.map((e) => convertToTreeItem(e, 0)) ?? [];
+  const res = project?.endpointGroups.map(convertToTreeItem) ?? [];
   endpoints.value = res;
 };
 </script>
@@ -148,20 +144,14 @@ const loadProject = async () => {
       :items="filteredEndpoints"
       @update:model-value="selectApi"
     >
-      <TreeVirtualizer v-slot="{ item }" :estimate-size="28" :text-content="(item) => item.value.name" :overscan="8">
-        <TreeItem
-          :key="item._id"
-          v-bind="item.bind"
-          v-slot="{ isSelected, isExpanded }"
-          :level="item.value.level"
-          :style="{ 'padding-left': `${item.level - 0.5}rem` }"
-          class="w-full"
-        >
+      <TreeVirtualizer v-slot="{ item }" :estimate-size="28" :text-content="(v) => v.name" :overscan="8">
+        <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isExpanded }" class="w-full">
           <div
             class="flex items-center cursor-pointer space-x-2 hover:bg-gray-200 py-0.5 min-w-0"
             :class="{
               'bg-gray-100': isSelected,
             }"
+            :style="{ 'padding-left': `${item.level - 0.5}rem` }"
           >
             <template v-if="item.value.isFolder">
               <template v-if="item.hasChildren">
