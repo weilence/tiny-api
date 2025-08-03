@@ -13,7 +13,7 @@ const schema = v.pipe(
   v.object({
     username: v.pipe(v.string(), v.minLength(1, '用户名不能为空'), v.maxLength(50, '用户名不能超过50个字符')),
     email: v.pipe(v.string(), v.email('请输入有效的邮箱地址')),
-    password: v.pipe(v.string(), v.minLength(6, '密码至少需要6位字符')),
+    password: passwordSchema,
     confirmPassword: v.string(),
     name: v.optional(v.pipe(v.string(), v.maxLength(100, '姓名不能超过100个字符'))),
   }),

@@ -1,14 +1,6 @@
 export default defineEventHandler(async (event) => {
   const userId = event.context.auth?.user;
   const req = await readBody<UserUpdatePasswordReq>(event);
-
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: '请先登录',
-    });
-  }
-
   const user = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -16,14 +8,14 @@ export default defineEventHandler(async (event) => {
   });
   if (!user) {
     throw createError({
-      statusCode: 404,
+      statusCode: 400,
       message: '用户不存在',
     });
   }
 
   if (!(await verifyPassword(user.password, req.oldPassword))) {
     throw createError({
-      statusCode: 401,
+      statusCode: 400,
       message: '旧密码错误',
     });
   }
@@ -37,4 +29,9 @@ export default defineEventHandler(async (event) => {
       password: newPasswordHash,
     },
   });
+
+  return {
+    success: true,
+    message: '密码修改成功',
+  };
 });

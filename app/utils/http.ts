@@ -21,7 +21,7 @@ export const http = {
 
   post: async <T = unknown, R extends ApiPath = ApiPath>(
     url: R,
-    data: RequestInit['body'] | Record<string, any>,
+    data?: RequestInit['body'] | Record<string, any>,
     options?: NitroFetchOptions<NitroFetchRequest>
   ) => {
     const { $api } = useNuxtApp();

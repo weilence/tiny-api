@@ -27,53 +27,37 @@ export const useAuth = () => {
 
   // 登录函数
   const login = async (credentials: { email: string; password: string }) => {
-    try {
-      // 这里应该调用你的登录 API
-      const res = await $fetch('/api/auth/login', {
-        method: 'POST',
-        body: credentials,
-      });
+    // 这里应该调用你的登录 API
+    const res = await http.post('/auth/login', credentials);
 
-      const { token: tokenData, ...userData } = res;
+    const { token: tokenData, ...userData } = res;
 
-      // 保存令牌
-      if (import.meta.client) {
-        localStorage.setItem('user_token', tokenData);
-      }
-
-      token.value = tokenData;
-      user.value = userData;
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error('登录失败:', error);
-      throw error;
+    // 保存令牌
+    if (import.meta.client) {
+      localStorage.setItem('user_token', tokenData);
     }
+
+    token.value = tokenData;
+    user.value = userData;
+    return { success: true, user: userData };
   };
 
   // 注册函数
   const register = async (userData: { username: string; email: string; password: string }) => {
-    try {
-      await $fetch('/api/auth/register', {
-        method: 'POST',
-        body: userData,
-      });
+    await http.post('/auth/register', userData);
 
-      return { success: true, message: '注册成功' };
-    } catch (error) {
-      console.error('注册失败:', error);
-      throw error;
-    }
+    return { success: true, message: '注册成功' };
   };
 
   // 登出函数
-  const logout = () => {
+  const logout = async () => {
     user.value = null;
 
     if (import.meta.client) {
       localStorage.removeItem('user_token');
-      localStorage.removeItem('user_data');
     }
 
+    await http.post('/auth/logout');
     // 重定向到登录页
     navigateTo('/auth/login');
   };
@@ -84,27 +68,18 @@ export const useAuth = () => {
 
     if (import.meta.client) {
       localStorage.removeItem('user_token');
-      localStorage.removeItem('user_data');
     }
   };
 
   // 忘记密码
   const forgotPassword = async (_email: string) => {
-    try {
-      // 这里应该调用你的忘记密码 API
-      // const response = await $fetch('/api/auth/forgot-password', {
-      //   method: 'POST',
-      //   body: { email }
-      // })
+    // 这里应该调用你的忘记密码 API
+    // const response = await http.POST('/auth/forgot-password', { email })
 
-      // 模拟 API 响应
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 模拟 API 响应
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      return { success: true, message: '重置邮件已发送' };
-    } catch (error) {
-      console.error('发送重置邮件失败:', error);
-      throw error;
-    }
+    return { success: true, message: '重置邮件已发送' };
   };
 
   // 获取认证头

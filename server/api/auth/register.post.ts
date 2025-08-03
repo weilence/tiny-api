@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   // 检查是否允许注册
   if (!config.public.allowRegister) {
     throw createError({
-      statusCode: 403,
+      statusCode: 400,
       message: '管理员已禁止注册，请联系管理员',
     });
   }

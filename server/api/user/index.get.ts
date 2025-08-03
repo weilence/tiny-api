@@ -1,12 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const userId = event.context.auth.user;
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: '用户未登录',
-    });
-  }
-
+  const userId = event.context.auth?.user;
   const user = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -14,7 +7,7 @@ export default defineEventHandler(async (event) => {
   });
   if (!user) {
     throw createError({
-      statusCode: 404,
+      statusCode: 400,
       message: '用户不存在',
     });
   }

@@ -11,14 +11,14 @@ export default defineEventHandler(async (event) => {
 
   if (!user) {
     throw createError({
-      statusCode: 404,
+      statusCode: 400,
       message: '用户不存在',
     });
   }
 
   if (!(await verifyPassword(user.password, req.password))) {
     throw createError({
-      statusCode: 401,
+      statusCode: 400,
       message: '密码错误',
     });
   }

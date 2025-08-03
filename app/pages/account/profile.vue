@@ -75,7 +75,7 @@
           </template>
 
           <div class="space-y-3">
-            <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-key">
+            <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-key" @click="openChangePasswordModal">
               修改密码
             </UButton>
             <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-shield-check">
@@ -99,8 +99,14 @@
 </template>
 
 <script setup lang="ts">
+import ModalChangePassword from './components/ModalChangePassword.vue';
+
 const { user, logout, refreshUser } = useAuth();
 const toast = useToast();
+const overlay = useOverlay();
+
+// 创建修改密码弹窗实例
+const modalChangePassword = overlay.create(ModalChangePassword);
 
 // 表单数据
 const profileForm = reactive({
@@ -161,6 +167,15 @@ async function saveProfile() {
 // 退出登录
 function handleLogout() {
   logout();
+}
+
+// 打开修改密码弹窗
+async function openChangePasswordModal() {
+  const instance = modalChangePassword.open();
+  if (await instance.result) {
+    // 如果密码修改成功，可以选择是否自动登出
+    // logout();
+  }
 }
 
 // 页面标题

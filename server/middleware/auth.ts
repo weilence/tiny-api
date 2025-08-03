@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  event.context.auth = { user: user };
+  event.context.auth = { user: user, token: token };
 });

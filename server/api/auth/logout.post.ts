@@ -1,14 +1,5 @@
 export default defineEventHandler(async (event) => {
-  // 从中间件获取令牌
-  const token = event.context.token;
-
-  if (!token) {
-    throw createError({
-      statusCode: 401,
-      message: '未找到有效的会话',
-    });
-  }
-
+  const token = event.context.auth?.token;
   try {
     // 删除 Redis 中的会话
     await redis.deleteUserSession(token);

@@ -17,7 +17,7 @@ const schema = v.pipe(
   v.object({
     username: v.pipe(v.string(), v.minLength(1, '用户名不能为空')),
     email: v.pipe(v.string(), v.email('请输入有效的邮箱地址')),
-    password: v.pipe(v.string(), v.minLength(6, '密码至少需要6位字符')),
+    password: passwordSchema,
     confirmPassword: v.string(),
     // agreeToTerms: v.pipe(v.boolean(), v.literal(true, '请同意服务条款和隐私政策')),
   }),
