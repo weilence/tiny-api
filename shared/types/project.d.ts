@@ -2,6 +2,7 @@ interface ProjectGetRes {
   id: string;
   name: string;
   description: string | null;
+  icon: string | null;
   groupId: string;
   endpointGroups: ProjectGetResEndpointGroup[];
   createdAt: Date;
@@ -38,6 +39,7 @@ interface ProjectQueryRes {
   id: string;
   name: string;
   description: string | null;
+  icon: string | null;
   groupId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,12 +48,14 @@ interface ProjectQueryRes {
 interface ProjectCreateReq {
   name: string;
   description: string | null;
+  icon: string | null;
   groupId: string;
 }
 
 interface ProjectUpdateReq {
   name?: string;
   description?: string | null;
+  icon?: string | null;
   groupId?: string;
 }
 

@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       id: true,
       name: true,
       description: true,
+      icon: true,
       groupId: true,
       createdAt: true,
       updatedAt: true,

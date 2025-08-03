@@ -64,6 +64,7 @@ export default defineEventHandler(async (event) => {
     id: project?.id || '',
     name: project?.name || '',
     description: project?.description || null,
+    icon: project?.icon || null,
     groupId: project?.groupId || '',
     endpointGroups: endpointGroups,
     createdAt: project?.createdAt || new Date(),

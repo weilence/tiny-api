@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
 import * as v from 'valibot';
+import { PROJECT_ICONS } from '../../../../shared/constants/icons';
 
 interface Props {
   groupId: string;
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 const schema = v.object({
   name: v.pipe(v.string(), v.nonEmpty('Name is required')),
   description: v.optional(v.string()),
+  icon: v.optional(v.string()),
 });
 
 type Schema = v.InferOutput<typeof schema>;
@@ -23,6 +25,7 @@ type Schema = v.InferOutput<typeof schema>;
 const state = reactive<Schema>({
   name: props.projectData?.name || '',
   description: props.projectData?.description || '',
+  icon: props.projectData?.icon || '',
 });
 
 const emit = defineEmits<{ close: [boolean] }>();
@@ -54,17 +57,26 @@ const submitText = computed(() => (props.mode === 'edit' ? 'Update' : 'Create'))
         <UFormField label="Name" name="name" required>
           <UInput v-model="state.name" placeholder="Enter project name" />
         </UFormField>
+
         <UFormField label="Description" name="description">
           <UInput v-model="state.description" placeholder="Enter project description" />
+        </UFormField>
+
+        <UFormField label="Icon" name="icon">
+          <USelect
+            v-model="state.icon"
+            :icon="state.icon"
+            :items="PROJECT_ICONS"
+            placeholder="Select an icon"
+            class="w-40"
+          />
         </UFormField>
       </UForm>
     </template>
     <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <UButton class="w-16 flex justify-center" type="submit" form="create-project-form" color="primary">{{
-          submitText
-        }}</UButton>
-        <UButton class="w-16 flex justify-center" color="secondary" @click="$emit('close', false)">Cancel</UButton>
+      <div class="button-group">
+        <UButton type="submit" form="create-project-form" color="primary">{{ submitText }}</UButton>
+        <UButton color="secondary" @click="$emit('close', false)">Cancel</UButton>
       </div>
     </template>
   </UModal>

@@ -222,6 +222,20 @@ onMounted(async () => {
                 />
               </div>
 
+              <!-- Project Icon -->
+              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
+                <UIcon
+                  v-if="project.icon"
+                  :name="project.icon"
+                  class="w-6 h-6 text-gray-600 dark:text-gray-300"
+                />
+                <UIcon
+                  v-else
+                  name="i-heroicons-folder"
+                  class="w-6 h-6 text-gray-400"
+                />
+              </div>
+
               <h3 class="text-sm font-medium text-center mb-1 line-clamp-2">
                 {{ project.name }}
               </h3>

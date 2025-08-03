@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
     data: {
       name: body.name,
       description: body.description,
+      icon: body.icon,
       groupId: body.groupId,
     },
   });
