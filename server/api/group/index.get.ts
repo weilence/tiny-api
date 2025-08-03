@@ -1,5 +1,3 @@
-import prisma from '~~/lib/prisma';
-
 export default defineEventHandler(async (_event) => {
   const groups: GroupQueryRes[] = await prisma.group.findMany({
     select: {

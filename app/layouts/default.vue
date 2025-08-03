@@ -13,6 +13,9 @@
             <li><NuxtLink to="/docs" class="nav-link">文档</NuxtLink></li> -->
           </ul>
         </nav>
+        <div class="user-menu">
+          <UserMenu />
+        </div>
       </div>
     </header>
 
@@ -82,6 +85,12 @@
 
 .nav-link.router-link-active {
   color: #3b82f6;
+}
+
+/* 用户菜单样式 */
+.user-menu {
+  display: flex;
+  align-items: center;
 }
 
 /* 主要内容区域 */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  parameter: Parameter;
+  parameter: PrismaJson.Parameter;
   level?: number;
   parentPath?: string;
 }
@@ -11,12 +11,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // Function to generate unique node ID
-const getNodeId = (param: Parameter, parentPath: string = '') => {
+const getNodeId = (param: PrismaJson.Parameter, parentPath: string = '') => {
   return parentPath ? `${parentPath}.${param.key}` : param.key;
 };
 
 // Function to get type display text
-const getTypeDisplay = (param: Parameter) => {
+const getTypeDisplay = (param: PrismaJson.Parameter) => {
   let typeText = param.type;
   if (param.isArray) {
     typeText += '[]';
@@ -58,7 +58,7 @@ onMounted(() => {
     expandedNodes.value.add(nodeId);
 
     // Recursively expand all children
-    const expandAllChildren = (param: Parameter, parentPath: string = '') => {
+    const expandAllChildren = (param: PrismaJson.Parameter, parentPath: string = '') => {
       if (param.children) {
         param.children.forEach((child) => {
           const childNodeId = getNodeId(child, parentPath ? `${parentPath}.${param.key}` : param.key);
@@ -134,11 +134,7 @@ onMounted(() => {
 
       <!-- Description -->
       <div class="py-3 px-4 flex-1 min-w-32">
-        <UTooltip
-          v-if="description && description !== '-'"
-          :text="description"
-          :popper="{ placement: 'top' }"
-        >
+        <UTooltip v-if="description && description !== '-'" :text="description" :popper="{ placement: 'top' }">
           <span class="text-sm text-gray-600 dark:text-gray-400 block truncate">
             {{ description }}
           </span>

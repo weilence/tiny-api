@@ -1,5 +1,9 @@
 <script setup lang="ts">
-definePageMeta({
-  redirect: '/group',
-});
+navigateTo('/group');
 </script>
+
+<template>
+    <div>
+        Loading...
+    </div>
+</template>

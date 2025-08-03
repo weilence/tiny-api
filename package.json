@@ -16,18 +16,22 @@
     "@nuxt/ui": "^3.3.0",
     "@prisma/adapter-pg": "^6.13.0",
     "@prisma/client": "^6.13.0",
+    "argon2": "^0.43.1",
     "eslint": "^9.31.0",
     "nuxt": "^4.0.1",
     "prisma-json-types-generator": "^3.5.1",
     "radash": "^12.1.1",
+    "redis": "^5.7.0",
     "reka-ui": "^2.4.0",
     "swagger-client": "^3.35.6",
     "typescript": "^5.8.3",
+    "uuid": "^11.1.0",
     "valibot": "^1.1.0",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "openapi-types": "^12.1.3"
   }
 }

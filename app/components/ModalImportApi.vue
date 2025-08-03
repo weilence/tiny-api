@@ -48,11 +48,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     formData.append('file', event.data.file);
   }
 
-  await $fetch(`/api/project/${props.projectId}/import`, {
-    method: 'POST',
-    body: formData,
-  });
-
+  await http.post(`/project/${props.projectId}/import`, formData);
   emit('close', true);
 };
 </script>

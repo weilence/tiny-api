@@ -29,20 +29,14 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   if (props.mode === 'edit' && props.projectData) {
-    await $fetch(`/api/project/${props.projectData.id}`, {
-      method: 'PUT',
-      body: {
-        ...event.data,
-        groupId: props.groupId,
-      },
+    await http.put(`/project/${props.projectData.id}`, {
+      ...event.data,
+      groupId: props.groupId,
     });
   } else {
-    await $fetch(`/api/project`, {
-      method: 'POST',
-      body: {
-        ...event.data,
-        groupId: props.groupId,
-      },
+    await http.post(`project`, {
+      ...event.data,
+      groupId: props.groupId,
     });
   }
 

@@ -1,7 +1,6 @@
 // @ts-expect-error - swagger-client doesn't have TypeScript definitions
 import SwaggerClient from 'swagger-client';
 import type { OpenAPI, OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import prisma from '~~/lib/prisma';
 import { DbNull } from '~~/.prisma/internal/prismaNamespace';
 
 export async function parseMultipartObject<T>(event: any) {
@@ -45,7 +44,7 @@ export async function parseMultipartObject<T>(event: any) {
 
 export default defineEventHandler(async (event) => {
   const req = await parseMultipartObject<ProjectImportReq>(event);
-  const projectId = event.context.params?.id || '';
+  const projectId = getRouterParam(event, 'id') || '';
 
   let apiDoc: any;
   if (req.importType === 'url') {

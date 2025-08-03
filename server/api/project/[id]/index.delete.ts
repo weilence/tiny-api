@@ -1,18 +1,18 @@
-import prisma from '~~/lib/prisma';
-
 export default defineEventHandler(async (event) => {
-  const id = event.context.params?.id;
+  const id = getRouterParam(event, 'id');
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Project ID is required' });
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.endpoint.deleteMany({
+    const groups = await tx.endpointGroup.findMany({
       where: { projectId: id },
+      select: { id: true },
     });
+    const groupIds = groups.map((group) => group.id);
 
-    await tx.project.delete({
-      where: { id },
-    });
+    await tx.endpoint.deleteMany({ where: { groupId: { in: groupIds } } });
+    await tx.endpointGroup.deleteMany({ where: { projectId: id } });
+    await tx.project.delete({ where: { id } });
   });
 });

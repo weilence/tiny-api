@@ -1,5 +1,3 @@
-import prisma from '~~/lib/prisma';
-
 export default defineEventHandler(async (event) => {
   const groupId = getQuery(event).groupId as string;
   if (!groupId) {

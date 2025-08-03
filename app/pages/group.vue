@@ -6,15 +6,13 @@ const projects = ref<ProjectQueryRes[]>([]);
 const selectedGroup = ref<string | null>(null);
 
 const loadGroups = async () => {
-  const res = await $fetch<ProjectQueryRes[]>(`/api/group`);
+  const res = await http.get<GroupQueryRes[]>(`/group`);
   groups.value = res;
 };
 
 const loadGroup = async (groupId: string) => {
   selectedGroup.value = groupId;
-  const res = await $fetch<ProjectQueryRes[]>(`/api/project`, {
-    query: { groupId },
-  });
+  const res = await http.get<ProjectQueryRes[]>(`/project`, { groupId });
   projects.value = res;
 };
 
@@ -43,9 +41,7 @@ const deleteGroup = async (groupId: string) => {
   if (!confirm) return;
 
   try {
-    await $fetch(`/api/group/${groupId}`, {
-      method: 'DELETE',
-    });
+    await http.delete(`/group/${groupId}`);
     toast.add({
       title: 'Group deleted successfully',
       color: 'success',
@@ -102,9 +98,7 @@ const deleteProject = async (projectId: string) => {
   if (!confirm) return;
 
   try {
-    await $fetch(`/api/project/${projectId}`, {
-      method: 'DELETE' as any,
-    });
+    await http.delete(`/project/${projectId}`);
     toast.add({
       title: 'Project deleted successfully',
       color: 'success',
@@ -226,7 +220,7 @@ onMounted(async () => {
                   @click.stop="deleteProject(project.id)"
                 />
               </div>
-              
+
               <h3 class="text-sm font-medium text-center mb-1 line-clamp-2">
                 {{ project.name }}
               </h3>

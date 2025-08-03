@@ -3,7 +3,7 @@ import { ParameterTreeTable } from '#components';
 import Left from './components/Left.vue';
 
 const route = useRoute();
-const apiDetail = ref<Serialized<ProjectGetResEndpoint>>();
+const apiDetail = ref<ProjectGetResEndpoint>();
 
 const projectId = route.params.id as string;
 

@@ -6,7 +6,7 @@ const props = defineProps<{
   projectId: string;
 }>();
 const emits = defineEmits<{
-  (e: 'select', api: Serialized<ProjectGetResEndpoint> | null): void;
+  (e: 'select', api: ProjectGetResEndpoint | null): void;
 }>();
 
 const endpoints = ref<TreeItem[]>([]);
@@ -53,7 +53,7 @@ const selectApi = (v: TreeItem) => {
   if (!v || v.isFolder) {
     emits('select', null);
   } else {
-    emits('select', v as Serialized<ProjectGetResEndpoint>);
+    emits('select', v as ProjectGetResEndpoint);
   }
 };
 
@@ -85,7 +85,7 @@ onMounted(async () => {
   await loadProject();
 });
 
-const convertToTreeItem = (endpoint: Serialized<ProjectGetResEndpointGroup>, level: number): TreeItem => ({
+const convertToTreeItem = (endpoint: ProjectGetResEndpointGroup, level: number): TreeItem => ({
   ...endpoint,
   isFolder: true,
   value: endpoint.id,
@@ -103,8 +103,9 @@ const convertToTreeItem = (endpoint: Serialized<ProjectGetResEndpointGroup>, lev
       }))
     ),
 });
+
 const loadProject = async () => {
-  const project = await $fetch(`/api/project/${props.projectId}`);
+  const project = await http.get<ProjectGetRes>(`/project/${props.projectId}`);
   const res = project?.endpointGroups.map((e) => convertToTreeItem(e, 0)) ?? [];
   endpoints.value = res;
 };

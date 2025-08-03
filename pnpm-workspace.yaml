@@ -5,6 +5,7 @@ onlyBuiltDependencies:
   - '@scarf/scarf'
   - '@tailwindcss/oxide'
   - '@tree-sitter-grammars/tree-sitter-yaml'
+  - argon2
   - core-js-pure
   - esbuild
   - prisma

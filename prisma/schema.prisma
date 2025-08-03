@@ -74,3 +74,13 @@ model Endpoint {
   updatedAt   DateTime      @updatedAt
   group       EndpointGroup @relation(fields: [groupId], references: [id])
 }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
