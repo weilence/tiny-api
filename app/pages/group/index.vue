@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ModalGroupDetail, ModalProjectDetail } from '#components';
+import ModalGroupDetail from './components/ModalGroupDetail.vue';
+import ModalProjectDetail from './components/ModalProjectDetail.vue';
 
 const groups = ref<GroupQueryRes[]>([]);
 const projects = ref<ProjectQueryRes[]>([]);

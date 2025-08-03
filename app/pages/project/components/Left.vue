@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ModalImportApi } from '#components';
+import ModalImportApi from './ModalImportApi.vue';
 import type { TreeItem } from '@nuxt/ui';
 
 const props = defineProps<{

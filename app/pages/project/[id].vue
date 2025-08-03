@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ParameterTreeTable } from '#components';
+import ParameterTreeTable from './components/ParameterTreeTable.vue';
 import Left from './components/Left.vue';
 
 const route = useRoute();
