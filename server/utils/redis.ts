@@ -1,10 +1,10 @@
 // 认证相关的 Redis 操作
 export const redis = {
   // 设置用户会话
-  async setUserSession(token: string, userId: string, expirationSeconds = 86400) {
+  async setUserSession(token: string, userId: string, ttl = 3600) {
     const storage = useStorage('redis');
     await storage.setItem(`session:${token}`, userId, {
-      expirationSeconds,
+      ttl: ttl,
     });
   },
 
