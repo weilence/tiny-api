@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   if (!groupId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Group ID is required',
+      message: 'Group ID is required',
     });
   }
 

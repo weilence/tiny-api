@@ -1,18 +1,18 @@
 // 需要排除的路径（不需要认证的接口）
-const excludedPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password'];
+const excludedPaths = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/forgot-password',
+  '/api/system/status',
+  '/api/system/init',
+];
 
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event);
   const path = url.pathname;
 
   // 只处理 API 请求
-  if (!path.startsWith('/api/')) {
-    return;
-  }
-
-  // 检查是否是排除的路径
-  const isExcluded = excludedPaths.includes(path);
-  if (isExcluded) {
+  if (!path.startsWith('/api/') || excludedPaths.includes(path)) {
     return;
   }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   if (!authHeader || !authHeader.startsWith('Token ')) {
     throw createError({
       statusCode: 401,
-      statusMessage: '未提供认证令牌',
+      message: '未提供认证令牌',
     });
   }
 
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   if (!token) {
     throw createError({
       statusCode: 401,
-      statusMessage: '无效的认证令牌',
+      message: '无效的认证令牌',
     });
   }
 
@@ -37,7 +37,9 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({
       statusCode: 401,
-      statusMessage: '会话已过期或无效',
+      message: '会话已过期或无效',
     });
   }
+
+  event.context.auth = { user: user };
 });

@@ -59,7 +59,7 @@
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <span class="text-gray-600 dark:text-gray-400">注册时间</span>
-              <span class="font-medium">2024年1月</span>
+              <span class="font-medium">{{ user?.createdAt }}</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-gray-600 dark:text-gray-400">最后登录</span>
@@ -99,16 +99,8 @@
 </template>
 
 <script setup lang="ts">
-const { user, logout } = useAuth();
+const { user, logout, refreshUser } = useAuth();
 const toast = useToast();
-
-// 如果用户未登录，重定向到登录页
-if (!user.value) {
-  throw createError({
-    statusCode: 401,
-    statusMessage: '未授权访问',
-  });
-}
 
 // 表单数据
 const profileForm = reactive({
@@ -141,12 +133,9 @@ async function saveProfile() {
   saving.value = true;
 
   try {
-    await $fetch(`/api/user`, {
-      method: 'PUT',
-      body: {
-        username: profileForm.username,
-        email: profileForm.email,
-      },
+    await http.put(`/user`, {
+      username: profileForm.username,
+      email: profileForm.email,
     });
 
     toast.add({
@@ -165,6 +154,7 @@ async function saveProfile() {
     });
   } finally {
     saving.value = false;
+    refreshUser();
   }
 }
 

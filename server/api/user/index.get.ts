@@ -1,11 +1,9 @@
 export default defineEventHandler(async (event) => {
   const userId = event.context.auth.user;
-  const req = await readBody<UserUpdateReq>(event);
-
   if (!userId) {
     throw createError({
-      statusCode: 400,
-      message: '用户ID不能为空',
+      statusCode: 401,
+      message: '用户未登录',
     });
   }
 
@@ -21,14 +19,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      username: req.username,
-      email: req.email,
-      name: req.name,
-    },
-  });
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    name: user.name,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  } as UserInfo;
 });

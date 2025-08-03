@@ -1,8 +1,8 @@
 // 用户认证相关的 composable
 // 用户状态
-const user = ref<UserInfo | null>(null);
+const user = ref<Serialized<UserInfo> | null>(null);
 const token = ref<string | null>(null);
-const isLoggedIn = computed(() => !!user.value);
+const isLoggedIn = computed(() => !!user.value && !!token.value);
 
 export const useAuth = () => {
   // 从 localStorage 初始化用户状态
@@ -12,38 +12,37 @@ export const useAuth = () => {
     }
 
     const userToken = localStorage.getItem('user_token');
-    const userData = localStorage.getItem('user_data');
-
-    if (userToken && userData) {
-      try {
-        user.value = JSON.parse(userData);
-        token.value = userToken;
-      } catch (error) {
-        console.error('解析用户数据失败:', error);
-        clearAuth();
-      }
+    if (!userToken) {
+      return;
     }
+
+    token.value = userToken;
+    await refreshUser();
+  };
+
+  const refreshUser = async () => {
+    const res = await http.get('/user');
+    user.value = res;
   };
 
   // 登录函数
   const login = async (credentials: { email: string; password: string }) => {
     try {
       // 这里应该调用你的登录 API
-      const user = await $fetch('/api/auth/login', {
+      const res = await $fetch('/api/auth/login', {
         method: 'POST',
         body: credentials,
       });
 
-      const { token, ...userData } = user;
+      const { token: tokenData, ...userData } = res;
 
-      // 保存用户信息和令牌
-      // 保存用户信息和令牌
+      // 保存令牌
       if (import.meta.client) {
-        localStorage.setItem('user_token', token);
-        localStorage.setItem('user_data', JSON.stringify(userData));
+        localStorage.setItem('user_token', tokenData);
       }
 
-      initializeAuth();
+      token.value = tokenData;
+      user.value = userData;
       return { success: true, user: userData };
     } catch (error) {
       console.error('登录失败:', error);
@@ -122,6 +121,7 @@ export const useAuth = () => {
     token: readonly(token),
     isLoggedIn,
     initializeAuth,
+    refreshUser,
     login,
     register,
     logout,

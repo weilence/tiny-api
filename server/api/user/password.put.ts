@@ -1,11 +1,11 @@
 export default defineEventHandler(async (event) => {
+  const userId = event.context.auth?.user;
   const req = await readBody<UserUpdatePasswordReq>(event);
 
-  const userId = getRouterParam(event, 'id');
   if (!userId) {
     throw createError({
-      statusCode: 400,
-      message: '用户ID不能为空',
+      statusCode: 401,
+      message: '请先登录',
     });
   }
 

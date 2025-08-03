@@ -2,12 +2,12 @@
 export default defineNuxtRouteMiddleware((to) => {
   // 检查是否需要认证的路由
   // 这里可以根据你的需求来定义哪些路由需要登录
-  const anonymousRoutes = ['/auth/login', '/auth/register'];
+  const anonymousRoutes = ['/auth/login', '/auth/register', '/init'];
   if (anonymousRoutes.includes(to.path)) {
     return;
   }
 
-  const isLoggedIn = import.meta.client ? localStorage.getItem('user_token') : false;
+  const isLoggedIn = localStorage.getItem('user_token');
   if (!isLoggedIn) {
     return navigateTo('/auth/login');
   }

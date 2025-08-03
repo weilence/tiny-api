@@ -16,7 +16,7 @@ const userMenuItems: DropdownMenuItem[][] = [
     {
       label: '个人设置',
       icon: 'i-heroicons-cog-6-tooth',
-      onSelect: () => navigateTo('/profile'),
+      onSelect: () => navigateTo('/account/profile'),
     },
     {
       label: '退出登录',

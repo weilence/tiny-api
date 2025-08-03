@@ -8,6 +8,10 @@ definePageMeta({
   title: '注册',
 });
 
+// 获取运行时配置
+const { public: publicConfig } = useRuntimeConfig();
+const allowRegister = publicConfig.allowRegister;
+
 // 表单验证模式
 const schema = v.pipe(
   v.object({
@@ -80,15 +84,37 @@ useHead({
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">创建新账户</h2>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          {{ allowRegister ? '创建新账户' : '注册已禁用' }}
+        </h2>
         <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          已有账户？
-          <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>
+          <template v-if="allowRegister">
+            已有账户？
+            <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>
+          </template>
+          <template v-else>
+            <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 返回登录 </NuxtLink>
+          </template>
         </p>
       </div>
 
       <UCard class="p-6">
-        <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <!-- 注册被禁用时显示的提示信息 -->
+        <div v-if="!allowRegister" class="text-center space-y-4">
+          <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-yellow-500" />
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">注册功能已关闭</h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              管理员已禁止新用户注册，如需账户请联系管理员。
+            </p>
+          </div>
+          <UButton to="/auth/login" size="lg" class="w-full">
+            前往登录
+          </UButton>
+        </div>
+
+        <!-- 注册表单 -->
+        <UForm v-else :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
           <UFormField label="用户名" name="username" required>
             <UInput
               v-model="state.username"
