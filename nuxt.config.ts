@@ -15,6 +15,12 @@ export default defineNuxtConfig({
     fonts: false,
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['reka-ui', '@vue/devtools-core', '@vue/devtools-kit', 'valibot'],
+    },
+  },
+
   ssr: false,
 
   runtimeConfig: {
