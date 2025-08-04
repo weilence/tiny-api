@@ -128,21 +128,21 @@ useHead({
             <p class="text-sm text-gray-500 dark:text-gray-400">请创建系统的第一个管理员账户</p>
           </div>
 
-          <UFormField label="用户名" name="username" required>
-            <UInput
-              v-model="state.username"
-              type="text"
-              placeholder="请输入管理员用户名"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
-
           <UFormField label="邮箱地址" name="email" required>
             <UInput
               v-model="state.email"
               type="email"
               placeholder="请输入管理员邮箱地址"
+              :disabled="loading"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField label="用户名" name="username" required>
+            <UInput
+              v-model="state.username"
+              type="text"
+              placeholder="请输入管理员用户名"
               :disabled="loading"
               class="w-full"
             />

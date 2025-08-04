@@ -112,7 +112,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   } else {
     await http.post('/group', event.data);
   }
-  
+
   emit('close', true); // true = refresh parent data
 };
 </script>
@@ -134,9 +134,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
         <UButton type="submit" form="form-id" color="primary">
           {{ mode === 'edit' ? 'Update' : 'Create' }}
         </UButton>
-        <UButton color="secondary" @click="$emit('close', false)">
-          Cancel
-        </UButton>
+        <UButton color="secondary" @click="$emit('close', false)"> Cancel </UButton>
       </div>
     </template>
   </UModal>
@@ -190,8 +188,12 @@ npx prisma migrate dev # Apply schema changes
 
 Required environment variables:
 
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_HOST`: Redis server host for sessions
+- `NUXT_DATABASE_URL`: PostgreSQL connection string
+- `NUXT_REDIS_HOST`: Redis server host for sessions (default: `127.0.0.1`)
+- `NUXT_REDIS_PORT`: Redis server port (default: 6379)
+- `NUXT_REDIS_PASSWORD`: Redis password (if required)
+- `NUXT_REDIS_DB`: Redis database index (default: 0)
+- `NUXT_PUBLIC_ALLOW_REGISTER`: Enable public registration
 
 ### Database Operations
 

@@ -115,21 +115,21 @@ useHead({
 
         <!-- 注册表单 -->
         <UForm v-else :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
-          <UFormField label="用户名" name="username" required>
-            <UInput
-              v-model="state.username"
-              type="text"
-              placeholder="请输入用户名"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
-
           <UFormField label="邮箱地址" name="email" required>
             <UInput
               v-model="state.email"
               type="email"
               placeholder="请输入邮箱地址"
+              :disabled="loading"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField label="用户名" name="username" required>
+            <UInput
+              v-model="state.username"
+              type="text"
+              placeholder="请输入用户名"
               :disabled="loading"
               class="w-full"
             />

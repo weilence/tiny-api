@@ -17,18 +17,16 @@ export default defineNuxtConfig({
 
   ssr: false,
 
-  nitro: {
-    storage: {
-      redis: {
-        driver: 'redis',
-        host: process.env.REDIS_HOST,
-      },
-    },
-  },
-
   runtimeConfig: {
     public: {
       allowRegister: false,
+    },
+    databaseUrl: '',
+    redis: {
+      host: '127.0.0.1',
+      port: 6379,
+      password: '',
+      db: 0,
     },
   },
 });
