@@ -19,7 +19,6 @@
             v-model="isDark"
             unchecked-icon="i-heroicons-sun"
             checked-icon="i-heroicons-moon"
-            @change="toggleDark"
           />
           <UserMenu />
         </div>
@@ -36,9 +35,12 @@
 <script setup>
 const colorMode = useColorMode();
 
-const isDark = ref(colorMode.preference === 'dark');
-
-function toggleDark() {
-  colorMode.preference = colorMode.preference === 'dark' ? 'light' : 'dark';
-}
+const isDark = computed({
+  get() {
+    return colorMode.value === 'dark'
+  },
+  set(_isDark) {
+    colorMode.preference = _isDark ? 'dark' : 'light'
+  }
+})
 </script>

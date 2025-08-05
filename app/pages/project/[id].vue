@@ -154,8 +154,8 @@ const sendRequest = () => {
           <template #preview>
             <div class="space-y-6">
               <div>
-                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">基本信息</h3>
-                <div class="bg-muted dark:bg-mutedgray-800 p-4 rounded-lg">
+                <h3 class="font-semibold mb-3 pb-2 border-b border-accented">基本信息</h3>
+                <div class="bg-muted p-4 rounded-lg">
                   <p class="text-sm">
                     {{ apiDetail.description || '暂无描述' }}
                   </p>
@@ -163,10 +163,10 @@ const sendRequest = () => {
               </div>
 
               <div v-if="apiDetail.queryParams && apiDetail.queryParams.length > 0">
-                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">请求参数</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-accented">请求参数</h3>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
-                    <thead class="bg-muted dark:bg-mutedgray-800">
+                    <thead class="bg-muted">
                       <tr>
                         <th class="px-4 py-2 text-left font-medium">参数名称</th>
                         <th class="px-4 py-2 text-left font-medium">类型</th>
@@ -178,7 +178,7 @@ const sendRequest = () => {
                       <tr
                         v-for="param in apiDetail.queryParams"
                         :key="param.key"
-                        class="border-t border-gray-200 dark:border-gray-700"
+                        class="border-b border-accented"
                       >
                         <td class="px-4 py-2 text-info">{{ param.key }}</td>
                         <td class="px-4 py-2">
@@ -199,10 +199,10 @@ const sendRequest = () => {
               </div>
 
               <div v-if="apiDetail.headers && apiDetail.headers.length > 0">
-                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Headers</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-accented">Headers</h3>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
-                    <thead class="bg-muted dark:bg-mutedgray-800">
+                    <thead class="bg-muted">
                       <tr>
                         <th class="px-4 py-2 text-left font-medium">参数名称</th>
                         <th class="px-4 py-2 text-left font-medium">示例值</th>
@@ -214,7 +214,7 @@ const sendRequest = () => {
                       <tr
                         v-for="header in apiDetail.headers"
                         :key="header.key"
-                        class="border-t border-gray-200 dark:border-gray-700"
+                        class="border-b border-accented"
                       >
                         <td class="px-4 py-2 text-info">{{ header.key }}</td>
                         <td class="px-4 py-2">{{ header.value }}</td>
@@ -233,12 +233,12 @@ const sendRequest = () => {
               </div>
 
               <div v-if="apiDetail.body">
-                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Body</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-accented">Body</h3>
                 <ParameterTreeTable :parameters="apiDetail.body" />
               </div>
 
               <div v-if="apiDetail.response">
-                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">返回数据</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-accented">返回数据</h3>
                 <div class="space-y-3">
                   <div class="flex items-center space-x-2">
                     <UBadge :color="apiDetail.response.status === 200 ? 'success' : 'error'" variant="solid" size="sm">
@@ -246,7 +246,7 @@ const sendRequest = () => {
                     </UBadge>
                     <span class="text-sm">OK</span>
                   </div>
-                  <div class="bg-muted dark:bg-mutedgray-800 p-4 rounded-lg">
+                  <div class="bg-muted p-4 rounded-lg">
                     <pre class="text-sm whitespace-pre-wrap">{{ apiDetail.response.body }}</pre>
                   </div>
                 </div>
@@ -369,14 +369,14 @@ const sendRequest = () => {
 
                   <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">响应头</label>
-                    <div class="bg-muted dark:bg-mutedgray-800 p-3 rounded-lg">
+                    <div class="bg-muted p-3 rounded-lg">
                       <pre class="text-sm"><code>{{ JSON.stringify(apiDetail.response.headers, null, 2) }}</code></pre>
                     </div>
                   </div>
 
                   <div>
                     <label class="block text-sm font-medium mb-2">响应体</label>
-                    <div class="bg-muted dark:bg-mutedgray-800 p-3 rounded-lg">
+                    <div class="bg-muted p-3 rounded-lg">
                       <pre class="text-sm"><code>{{ apiDetail.response.body }}</code></pre>
                     </div>
                   </div>
@@ -399,7 +399,7 @@ const sendRequest = () => {
           <div class="flex items-center justify-center min-h-[calc(100vh-14rem)]">
             <div class="text-center">
               <UIcon name="i-heroicons-cursor-arrow-rays" class="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">选择一个接口</h3>
+              <h3 class="text-lg font-medium mb-2">选择一个接口</h3>
               <p class="text-gray-500">从左侧列表中选择一个接口来查看详细信息</p>
             </div>
           </div>

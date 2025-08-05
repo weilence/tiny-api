@@ -141,11 +141,11 @@ onMounted(async () => {
           <div
             v-for="group in groups"
             :key="group.id"
-            class="p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            class="p-3 rounded-lg cursor-pointer transition-colors duration-200 border hover:bg-muted"
             :class="{
-              'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800':
+              'border-primary':
                 group.id == selectedGroup,
-              'border border-transparent': group.id != selectedGroup,
+              'border-transparent': group.id != selectedGroup,
             }"
             @click="loadGroup(group.id)"
           >
@@ -154,13 +154,13 @@ onMounted(async () => {
                 <div class="flex items-center space-x-2">
                   <span
                     class="font-medium"
-                    :class="group.id == selectedGroup ? 'text-primary-600 dark:text-primary-400' : ''"
+                    :class="group.id == selectedGroup ? 'text-primary' : ''"
                   >
                     {{ group.name }}
                   </span>
-                  <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0" />
+                  <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
                 </div>
-                <p v-if="group.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 break-all">
+                <p v-if="group.description" class="text-xs text-muted mt-1 line-clamp-2 break-all">
                   {{ group.description }}
                 </p>
               </div>
@@ -168,7 +168,7 @@ onMounted(async () => {
                 <UButton
                   icon="i-heroicons-pencil-square"
                   size="xs"
-                  color="neutral"
+                  color="info"
                   variant="ghost"
                   @click.stop="editGroup(group)"
                 />
@@ -201,14 +201,14 @@ onMounted(async () => {
           <div
             v-for="project in projects"
             :key="project.id"
-            class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md group"
+            class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-muted hover:shadow-md group"
             @click="navigateToProject(project.id)"
           >
             <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
               <UButton
                 icon="i-heroicons-pencil-square"
                 size="xs"
-                color="neutral"
+                color="info"
                 variant="ghost"
                 @click.stop="editProject(project)"
               />
@@ -222,16 +222,16 @@ onMounted(async () => {
             </div>
 
             <!-- Project Icon -->
-            <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
-              <UIcon v-if="project.icon" :name="project.icon" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              <UIcon v-else name="i-heroicons-folder" class="w-6 h-6 text-gray-400" />
+            <div class="rounded-lg flex items-center justify-center mb-3">
+              <UIcon v-if="project.icon" :name="project.icon" :size="64" />
+              <UIcon v-else name="i-heroicons-folder" :size="64" />
             </div>
 
             <h3 class="text-sm font-medium text-center mb-1 line-clamp-1 w-full">
               {{ project.name }}
             </h3>
 
-            <p class="text-xs text-gray-500 dark:text-gray-400 text-center line-clamp-2 w-fulll break-all">
+            <p class="text-xs text-muted text-center line-clamp-2 w-fulll break-all">
               {{ project.description }}
             </p>
           </div>

@@ -22,9 +22,9 @@ const getNodeId = (param: PrismaJson.Parameter, parentPath: string = '') => {
 </script>
 
 <template>
-  <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+  <div class="border border-accented rounded-lg overflow-hidden">
     <!-- Table header -->
-    <div class="bg-muted border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-muted border-b border-accented">
       <div class="flex items-center">
         <div class="py-3 px-4 w-64">
           <span class="text-sm font-medium">参数名称</span>
@@ -45,7 +45,7 @@ const getNodeId = (param: PrismaJson.Parameter, parentPath: string = '') => {
     </div>
 
     <!-- Table body -->
-    <div class="bg-white dark:bg-gray-900">
+    <div>
       <ParameterRow v-for="param in parameterList" :key="getNodeId(param)" :parameter="param" :level="0" />
     </div>
   </div>

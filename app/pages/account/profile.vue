@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-4xl mx-auto py-8">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">个人资料</h1>
-      <p class="text-gray-600 dark:text-gray-400">管理您的账户信息和设置</p>
+      <h1 class="text-3xl font-bold mb-2">个人资料</h1>
+      <p class="text-toned">管理您的账户信息和设置</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -14,20 +14,20 @@
 
         <div class="space-y-6">
           <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 bg-primary-100 dark:bg-primary-800 rounded-full flex items-center justify-center">
-              <UIcon name="i-heroicons-user" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+            <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+              <UIcon name="i-heroicons-user" class="w-8 h-8 text-primary-600" />
             </div>
             <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              <h3 class="text-lg font-medium text-highlighted">
                 {{ user?.username || '用户' }}
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-muted">
                 {{ user?.email }}
               </p>
             </div>
           </div>
 
-          <div class="border-t border-gray-200 dark:border-gray-700 my-6" />
+          <div class="border-t border-accented my-6" />
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -35,7 +35,7 @@
               <UInput v-model="profileForm.username" :disabled="!editing" placeholder="输入用户名" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1"> 邮箱地址 </label>
+              <label class="block text-sm font-medium mb-1"> 邮箱地址 </label>            
               <UInput v-model="profileForm.email" type="email" :disabled="!editing" placeholder="输入邮箱地址" />
             </div>
           </div>
@@ -58,11 +58,11 @@
 
           <div class="space-y-4">
             <div class="flex justify-between items-center">
-              <span class="text-gray-600 dark:text-gray-400">注册时间</span>
-              <span class="font-medium">{{ user?.createdAt }}</span>
+              <span class="text-muted">注册时间</span>
+              <span class="font-medium">{{ toCalendarDate(parseAbsoluteToLocal(user?.createdAt || '')) }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-600 dark:text-gray-400">最后登录</span>
+              <span class="text-muted">最后登录</span>
               <span class="font-medium">今天</span>
             </div>
           </div>
@@ -99,6 +99,7 @@
 </template>
 
 <script setup lang="ts">
+import { parseAbsoluteToLocal, toCalendarDate } from '@internationalized/date';
 import ModalChangePassword from './components/ModalChangePassword.vue';
 
 const { user, logout, refreshUser } = useAuth();

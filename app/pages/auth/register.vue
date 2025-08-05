@@ -81,10 +81,10 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+        <h2 class="mt-6 text-center text-3xl font-extrabold">
           {{ allowRegister ? '创建新账户' : '注册已禁用' }}
         </h2>
         <p class="mt-2 text-center text-sm">
@@ -101,10 +101,10 @@ useHead({
       <UCard class="p-6">
         <!-- 注册被禁用时显示的提示信息 -->
         <div v-if="!allowRegister" class="text-center space-y-4">
-          <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-yellow-500" />
+          <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-warning" />
           <div>
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">注册功能已关闭</h3>
-            <p class="text-gray-600 dark:text-gray-400">
+            <h3 class="text-lg font-medium mb-2">注册功能已关闭</h3>
+            <p class="text-muted">
               管理员已禁止新用户注册，如需账户请联系管理员。
             </p>
           </div>

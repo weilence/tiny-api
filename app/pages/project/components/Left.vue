@@ -147,23 +147,23 @@ const loadProject = async () => {
       <TreeVirtualizer v-slot="{ item }" :estimate-size="28" :text-content="(v) => v.name" :overscan="8">
         <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isExpanded }" class="w-full">
           <div
-            class="flex items-center cursor-pointer space-x-2 hover:bg-gray-200 py-0.5 min-w-0"
+            class="flex items-center cursor-pointer space-x-2 hover:bg-accented py-0.5 min-w-0"
             :class="{
-              'bg-gray-100': isSelected,
+              'bg-muted': isSelected,
             }"
             :style="{ 'padding-left': `${item.level - 0.5}rem` }"
           >
             <template v-if="item.value.isFolder">
               <template v-if="item.hasChildren">
-                <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4 text-gray-600" />
-                <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4 text-gray-600" />
+                <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4" />
+                <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4" />
               </template>
               <span :class="{ 'text-primary': isSelected }" class="truncate flex-1 min-w-0" :title="item.value.name">
                 <template
                   v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
                   :key="partIndex"
                 >
-                  <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
+                  <mark v-if="part.highlight" class="text-warning rounded px-0.5">{{
                     part.text
                   }}</mark>
                   <template v-else>{{ part.text }}</template>
@@ -179,7 +179,7 @@ const loadProject = async () => {
                   v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
                   :key="partIndex"
                 >
-                  <mark v-if="part.highlight" class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{{
+                  <mark v-if="part.highlight" class="bg-warning rounded px-0.5">{{
                     part.text
                   }}</mark>
                   <template v-else>{{ part.text }}</template>
