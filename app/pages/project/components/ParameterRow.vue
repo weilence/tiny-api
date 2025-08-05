@@ -100,11 +100,11 @@ onMounted(() => {
             :text="parameter.key"
             :popper="{ placement: 'top' }"
           >
-            <span class="text-sm font-mono text-blue-600 dark:text-blue-400 block truncate">
+            <span class="text-sm font-mono text-info block truncate">
               {{ parameter.key }}
             </span>
           </UTooltip>
-          <span v-else class="text-sm font-mono text-blue-600 dark:text-blue-400">
+          <span v-else class="text-sm font-mono text-info">
             {{ parameter.key || 'root' }}
           </span>
         </div>
@@ -112,7 +112,7 @@ onMounted(() => {
 
       <!-- Type -->
       <div class="py-3 px-4 w-32">
-        <span class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+        <span class="text-sm font-mono">
           {{ getTypeDisplay(parameter) }}
         </span>
       </div>
@@ -127,7 +127,7 @@ onMounted(() => {
 
       <!-- Value -->
       <div class="py-3 px-4 w-40">
-        <span class="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
+        <span class="text-sm font-mono break-all">
           {{ parameter.value || '-' }}
         </span>
       </div>
@@ -135,11 +135,11 @@ onMounted(() => {
       <!-- Description -->
       <div class="py-3 px-4 flex-1 min-w-32">
         <UTooltip v-if="description && description !== '-'" :text="description" :popper="{ placement: 'top' }">
-          <span class="text-sm text-gray-600 dark:text-gray-400 block truncate">
+          <span class="text-sm block truncate">
             {{ description }}
           </span>
         </UTooltip>
-        <span v-else class="text-sm text-gray-600 dark:text-gray-400"> - </span>
+        <span v-else class="text-sm"> - </span>
       </div>
     </div>
 

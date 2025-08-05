@@ -87,7 +87,7 @@ useHead({
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           {{ allowRegister ? '创建新账户' : '注册已禁用' }}
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-center text-sm">
           <template v-if="allowRegister">
             已有账户？
             <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>

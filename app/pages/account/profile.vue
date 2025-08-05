@@ -31,11 +31,11 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> 用户名 </label>
+              <label class="block text-sm font-medium mb-1"> 用户名 </label>
               <UInput v-model="profileForm.username" :disabled="!editing" placeholder="输入用户名" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> 邮箱地址 </label>
+              <label class="block text-sm font-medium mb-1"> 邮箱地址 </label>
               <UInput v-model="profileForm.email" type="email" :disabled="!editing" placeholder="输入邮箱地址" />
             </div>
           </div>

@@ -103,7 +103,7 @@ useHead({
         <h2 class="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
           {{ completed ? '初始化完成' : '系统初始化' }}
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-2 text-center text-sm">
           {{ completed ? '正在跳转到登录页面...' : '创建系统管理员账户' }}
         </p>
       </div>

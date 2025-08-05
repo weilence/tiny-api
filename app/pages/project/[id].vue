@@ -84,9 +84,9 @@ const sendRequest = () => {
   <div>
     <div class="mb-2">
       <nav class="flex items-center space-x-2 text-sm">
-        <NuxtLink to="/group" class="text-primary-600 hover:text-primary-800"> Group </NuxtLink>
-        <span class="text-gray-400">/</span>
-        <span class="text-gray-600">Project {{ projectId }}</span>
+        <NuxtLink to="/group" class="text-primary"> Group </NuxtLink>
+        <span>/</span>
+        <span>Project {{ projectId }}</span>
       </nav>
     </div>
 
@@ -108,10 +108,10 @@ const sendRequest = () => {
               <UButton color="primary" variant="solid" @click="sendRequest">Send Request</UButton>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span class="font-medium mr-2">Path:</span>
-                <span class="text-blue-600 dark:text-blue-400">{{ apiDetail.path }}</span>
+                <span class="text-info">{{ apiDetail.path }}</span>
               </div>
               <div class="flex items-center space-x-2">
                 <span class="font-medium mr-2">Creator:</span>
@@ -120,7 +120,7 @@ const sendRequest = () => {
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span class="font-medium mr-2">Status:</span>
                 <UBadge color="success" variant="soft" size="sm">Published</UBadge>
@@ -132,7 +132,7 @@ const sendRequest = () => {
             </div>
 
             <div v-if="apiDetail.tags && apiDetail.tags.length > 0">
-              <span class="text-sm font-medium text-gray-600 dark:text-gray-400 mr-2">Tag:</span>
+              <span class="text-sm font-medium mr-2">Tag:</span>
               <div class="inline-flex flex-wrap gap-1">
                 <UBadge v-for="tag in apiDetail.tags" :key="tag" variant="soft" color="primary" size="sm">
                   {{ tag }}
@@ -154,28 +154,24 @@ const sendRequest = () => {
           <template #preview>
             <div class="space-y-6">
               <div>
-                <h3 class="text-base font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                  基本信息
-                </h3>
-                <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
+                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">基本信息</h3>
+                <div class="bg-muted dark:bg-mutedgray-800 p-4 rounded-lg">
+                  <p class="text-sm">
                     {{ apiDetail.description || '暂无描述' }}
                   </p>
                 </div>
               </div>
 
               <div v-if="apiDetail.queryParams && apiDetail.queryParams.length > 0">
-                <h3 class="text-base font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                  请求参数
-                </h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">请求参数</h3>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
-                    <thead class="bg-gray-50 dark:bg-gray-800">
+                    <thead class="bg-muted dark:bg-mutedgray-800">
                       <tr>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">参数名称</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">类型</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">必填</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">备注</th>
+                        <th class="px-4 py-2 text-left font-medium">参数名称</th>
+                        <th class="px-4 py-2 text-left font-medium">类型</th>
+                        <th class="px-4 py-2 text-left font-medium">必填</th>
+                        <th class="px-4 py-2 text-left font-medium">备注</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -184,8 +180,8 @@ const sendRequest = () => {
                         :key="param.key"
                         class="border-t border-gray-200 dark:border-gray-700"
                       >
-                        <td class="px-4 py-2 text-blue-600 dark:text-blue-400">{{ param.key }}</td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                        <td class="px-4 py-2 text-info">{{ param.key }}</td>
+                        <td class="px-4 py-2">
                           {{ param.type }}{{ param.isArray ? '[]' : '' }}
                         </td>
                         <td class="px-4 py-2">
@@ -193,7 +189,7 @@ const sendRequest = () => {
                             {{ param.enabled ? '必填' : '可选' }}
                           </UBadge>
                         </td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                        <td class="px-4 py-2">
                           {{ param.description || '-' }}
                         </td>
                       </tr>
@@ -203,15 +199,15 @@ const sendRequest = () => {
               </div>
 
               <div v-if="apiDetail.headers && apiDetail.headers.length > 0">
-                <h3 class="text-base font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Headers</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Headers</h3>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
-                    <thead class="bg-gray-50 dark:bg-gray-800">
+                    <thead class="bg-muted dark:bg-mutedgray-800">
                       <tr>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">参数名称</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">示例值</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">必填</th>
-                        <th class="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">备注</th>
+                        <th class="px-4 py-2 text-left font-medium">参数名称</th>
+                        <th class="px-4 py-2 text-left font-medium">示例值</th>
+                        <th class="px-4 py-2 text-left font-medium">必填</th>
+                        <th class="px-4 py-2 text-left font-medium">备注</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -220,14 +216,14 @@ const sendRequest = () => {
                         :key="header.key"
                         class="border-t border-gray-200 dark:border-gray-700"
                       >
-                        <td class="px-4 py-2 text-blue-600 dark:text-blue-400">{{ header.key }}</td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">{{ header.value }}</td>
+                        <td class="px-4 py-2 text-info">{{ header.key }}</td>
+                        <td class="px-4 py-2">{{ header.value }}</td>
                         <td class="px-4 py-2">
                           <UBadge :color="header.enabled ? 'error' : 'neutral'" variant="soft" size="sm">
                             {{ header.enabled ? '必填' : '可选' }}
                           </UBadge>
                         </td>
-                        <td class="px-4 py-2 text-gray-600 dark:text-gray-400">
+                        <td class="px-4 py-2">
                           {{ header.description || '-' }}
                         </td>
                       </tr>
@@ -237,25 +233,21 @@ const sendRequest = () => {
               </div>
 
               <div v-if="apiDetail.body">
-                <h3 class="text-base font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Body</h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">Body</h3>
                 <ParameterTreeTable :parameters="apiDetail.body" />
               </div>
 
               <div v-if="apiDetail.response">
-                <h3 class="text-base font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                  返回数据
-                </h3>
+                <h3 class="font-semibold mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">返回数据</h3>
                 <div class="space-y-3">
                   <div class="flex items-center space-x-2">
                     <UBadge :color="apiDetail.response.status === 200 ? 'success' : 'error'" variant="solid" size="sm">
                       {{ apiDetail.response.status }}
                     </UBadge>
-                    <span class="text-sm text-gray-600 dark:text-gray-400">OK</span>
+                    <span class="text-sm">OK</span>
                   </div>
-                  <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{
-                      apiDetail.response.body
-                    }}</pre>
+                  <div class="bg-muted dark:bg-mutedgray-800 p-4 rounded-lg">
+                    <pre class="text-sm whitespace-pre-wrap">{{ apiDetail.response.body }}</pre>
                   </div>
                 </div>
               </div>
@@ -265,7 +257,7 @@ const sendRequest = () => {
           <template #edit>
             <div class="space-y-6">
               <div>
-                <h3 class="text-base font-semibold mb-3">基本信息</h3>
+                <h3 class="font-semibold mb-3">基本信息</h3>
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium mb-2">接口路径</label>
@@ -280,7 +272,7 @@ const sendRequest = () => {
 
               <div>
                 <div class="flex justify-between items-center mb-3">
-                  <h3 class="text-base font-semibold">Headers</h3>
+                  <h3 class="font-semibold">Headers</h3>
                   <UButton icon="i-heroicons-plus" size="sm" variant="soft" @click="addHeader"> 添加 </UButton>
                 </div>
                 <div class="space-y-2">
@@ -316,7 +308,7 @@ const sendRequest = () => {
 
               <div>
                 <div class="flex justify-between items-center mb-3">
-                  <h3 class="text-base font-semibold">查询参数</h3>
+                  <h3 class="font-semibold">查询参数</h3>
                   <UButton icon="i-heroicons-plus" size="sm" variant="soft" @click="addQueryParam"> 添加 </UButton>
                 </div>
                 <div class="space-y-2">
@@ -351,7 +343,7 @@ const sendRequest = () => {
               </div>
 
               <div>
-                <h3 class="text-base font-semibold mb-3">请求体</h3>
+                <h3 class="font-semibold mb-3">请求体</h3>
                 <!-- <UTextarea
                   v-model="apiDetail.body"
                   :rows="12"
@@ -365,7 +357,7 @@ const sendRequest = () => {
           <template #run>
             <div class="space-y-6">
               <div v-if="apiDetail.response">
-                <h3 class="text-base font-semibold mb-3">响应结果</h3>
+                <h3 class="font-semibold mb-3">响应结果</h3>
                 <div class="space-y-4">
                   <div class="flex items-center space-x-4 mb-4">
                     <UBadge :color="apiDetail.response.status === 200 ? 'success' : 'error'" variant="solid">
@@ -377,14 +369,14 @@ const sendRequest = () => {
 
                   <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">响应头</label>
-                    <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    <div class="bg-muted dark:bg-mutedgray-800 p-3 rounded-lg">
                       <pre class="text-sm"><code>{{ JSON.stringify(apiDetail.response.headers, null, 2) }}</code></pre>
                     </div>
                   </div>
 
                   <div>
                     <label class="block text-sm font-medium mb-2">响应体</label>
-                    <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    <div class="bg-muted dark:bg-mutedgray-800 p-3 rounded-lg">
                       <pre class="text-sm"><code>{{ apiDetail.response.body }}</code></pre>
                     </div>
                   </div>
