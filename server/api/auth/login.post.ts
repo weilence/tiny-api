@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
     email: user.email,
     username: user.username,
     name: user.name,
+    role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   } as UserLoginRes;

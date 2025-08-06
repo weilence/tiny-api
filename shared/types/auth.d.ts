@@ -14,6 +14,7 @@ interface UserInfo {
   email: string;
   username: string;
   name?: string;
+  role?: 'MEMBER' | 'ADMIN';
   createdAt: Date;
   updatedAt: Date;
 }

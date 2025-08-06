@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ModalConfirmDelete } from '#components';
 import ModalGroupDetail from './components/ModalGroupDetail.vue';
 import ModalProjectDetail from './components/ModalProjectDetail.vue';
 
@@ -37,29 +38,28 @@ const editGroup = async (group: GroupQueryRes) => {
   }
 };
 
+const confirmDeleteGroup = overlay.create(ModalConfirmDelete);
 const deleteGroup = async (groupId: string) => {
-  const confirm = window.confirm('Are you sure you want to delete this group?');
-  if (!confirm) return;
+  const instance = confirmDeleteGroup.open({
+    title: 'Delete Group',
+    description: 'Are you sure you want to delete this group? This action cannot be undone.',
+    ok: async () => {
+      await http.delete(`/group/${groupId}`);
+      if (selectedGroup.value === groupId) {
+        selectedGroup.value = null;
+        projects.value = [];
+      }
+      await loadGroups();
+    },
+  });
 
-  try {
-    await http.delete(`/group/${groupId}`);
-    toast.add({
-      title: 'Group deleted successfully',
-      color: 'success',
-      duration: 3000,
-    });
-    if (selectedGroup.value === groupId) {
-      selectedGroup.value = null;
-      projects.value = [];
-    }
-    await loadGroups();
-  } catch {
-    toast.add({
-      title: 'Failed to delete group',
-      color: 'error',
-      duration: 3000,
-    });
-  }
+  if (!(await instance.result)) return;
+
+  toast.add({
+    title: 'Group deleted successfully',
+    color: 'success',
+    duration: 3000,
+  });
 };
 
 const toast = useToast();
@@ -143,8 +143,7 @@ onMounted(async () => {
             :key="group.id"
             class="p-3 rounded-lg cursor-pointer transition-colors duration-200 border hover:bg-muted"
             :class="{
-              'border-primary':
-                group.id == selectedGroup,
+              'border-primary': group.id == selectedGroup,
               'border-transparent': group.id != selectedGroup,
             }"
             @click="loadGroup(group.id)"
@@ -152,10 +151,7 @@ onMounted(async () => {
             <div class="flex items-start justify-between">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center space-x-2">
-                  <span
-                    class="font-medium"
-                    :class="group.id == selectedGroup ? 'text-primary' : ''"
-                  >
+                  <span class="font-medium" :class="group.id == selectedGroup ? 'text-primary' : ''">
                     {{ group.name }}
                   </span>
                   <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
@@ -241,5 +237,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

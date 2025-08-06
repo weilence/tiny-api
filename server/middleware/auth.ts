@@ -7,6 +7,9 @@ const excludedPaths = [
   '/api/system/init',
 ];
 
+// 需要管理员权限的路径模式（使用简单的字符串匹配）
+const adminPathPrefix = '/api/admin/';
+
 export default defineEventHandler(async (event) => {
   const url = getRequestURL(event);
   const path = url.pathname;
@@ -33,13 +36,41 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const user = await redis.getUserSession(token);
-  if (!user) {
+  const userId = await redis.getUserSession(token);
+  if (!userId) {
     throw createError({
       statusCode: 401,
       message: '会话已过期或无效',
     });
   }
 
-  event.context.auth = { user: user, token: token };
+  // 获取完整的用户信息
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      message: '用户不存在',
+    });
+  }
+
+  // 检查是否需要管理员权限
+  const isAdminPath = path.startsWith(adminPathPrefix);
+
+  if (isAdminPath && user.role !== 'ADMIN') {
+    throw createError({
+      statusCode: 403,
+      message: '权限不足，需要管理员权限',
+    });
+  }
+
+  event.context.auth = { user: user.id, token: token };
 });

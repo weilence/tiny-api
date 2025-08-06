@@ -7,5 +7,7 @@
   },
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "css.lint.unknownAtRules": "ignore",
 }

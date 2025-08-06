@@ -5,7 +5,7 @@
   @apply flex w-full justify-end;
 }
 
-button {
+button:not(:disabled) {
   @apply cursor-pointer;
 }
 
