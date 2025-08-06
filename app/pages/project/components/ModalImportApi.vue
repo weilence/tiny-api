@@ -78,8 +78,8 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     </template>
     <template #footer>
       <div class="button-group">
-        <UButton class="button" form="import-api-form" type="submit">Ok</UButton>
-        <UButton class="button" color="secondary" @click="$emit('close', false)">Cancel</UButton>
+        <UButton form="import-api-form" type="submit">Ok</UButton>
+        <UButton color="secondary" @click="$emit('close', false)">Cancel</UButton>
       </div>
     </template>
   </UModal>

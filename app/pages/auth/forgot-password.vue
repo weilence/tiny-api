@@ -1,37 +1,36 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold">重置密码</h2>
-        <p class="mt-2 text-center text-sm">输入您的邮箱地址，我们将发送重置密码的链接给您</p>
-      </div>
+  <NuxtLayout name="auth">
+    <template #header>
+      <h2 class="mt-6 text-3xl font-extrabold">重置密码</h2>
+      <p class="mt-2 text-sm">输入您的邮箱地址，我们将发送重置密码的链接给您</p>
+    </template>
 
-      <UCard class="p-6">
-        <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
-          <UFormField label="邮箱地址" name="email" required>
-            <UInput v-model="state.email" type="email" placeholder="请输入注册时使用的邮箱地址" :disabled="loading" />
-          </UFormField>
+    <template #body>
+      <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <UFormField label="邮箱地址" name="email" required>
+          <UInput v-model="state.email" type="email" placeholder="请输入注册时使用的邮箱地址" :disabled="loading" />
+        </UFormField>
 
-          <UButton type="submit" :loading="loading" size="lg" class="w-full"> 发送重置链接 </UButton>
+        <UButton type="submit" :loading="loading" size="lg" class="w-full"> 发送重置链接 </UButton>
 
-          <div class="text-center">
-            <NuxtLink to="/auth/login" class="text-sm text-primary-600 hover:text-primary-500"> 返回登录页面 </NuxtLink>
-          </div>
-        </UForm>
-      </UCard>
+        <div class="text-center">
+          <NuxtLink to="/auth/login" class="text-link"> 返回登录页面 </NuxtLink>
+        </div>
+      </UForm>
+    </template>
 
-      <!-- 成功提示 -->
-      <UCard v-if="emailSent" class="p-6 border-primary-200 bg-primary-50 dark:bg-primary-900/20">
+    <template #footer>
+      <UCard v-if="emailSent" class="p-6 border-primary-200 bg-primary/10">
         <div class="flex items-center space-x-2">
-          <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-primary-600" />
+          <UIcon name="i-heroicons-check-circle" class="w-5 h-5" />
           <div>
-            <h3 class="text-sm font-medium text-primary-800 dark:text-primary-200">邮件已发送</h3>
-            <p class="text-sm text-primary-600 dark:text-primary-300 mt-1">请检查您的邮箱并点击重置链接来设置新密码</p>
+            <h3 class="text-sm font-medium">邮件已发送</h3>
+            <p class="text-sm mt-1">请检查您的邮箱并点击重置链接来设置新密码</p>
           </div>
         </div>
       </UCard>
-    </div>
-  </div>
+    </template>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">

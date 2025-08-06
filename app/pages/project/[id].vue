@@ -175,15 +175,9 @@ const sendRequest = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        v-for="param in apiDetail.queryParams"
-                        :key="param.key"
-                        class="border-b border-accented"
-                      >
+                      <tr v-for="param in apiDetail.queryParams" :key="param.key" class="border-b border-accented">
                         <td class="px-4 py-2 text-info">{{ param.key }}</td>
-                        <td class="px-4 py-2">
-                          {{ param.type }}{{ param.isArray ? '[]' : '' }}
-                        </td>
+                        <td class="px-4 py-2">{{ param.type }}{{ param.isArray ? '[]' : '' }}</td>
                         <td class="px-4 py-2">
                           <UBadge :color="param.enabled ? 'error' : 'neutral'" variant="soft" size="sm">
                             {{ param.enabled ? '必填' : '可选' }}
@@ -211,11 +205,7 @@ const sendRequest = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        v-for="header in apiDetail.headers"
-                        :key="header.key"
-                        class="border-b border-accented"
-                      >
+                      <tr v-for="header in apiDetail.headers" :key="header.key" class="border-b border-accented">
                         <td class="px-4 py-2 text-info">{{ header.key }}</td>
                         <td class="px-4 py-2">{{ header.value }}</td>
                         <td class="px-4 py-2">
@@ -363,8 +353,8 @@ const sendRequest = () => {
                     <UBadge :color="apiDetail.response.status === 200 ? 'success' : 'error'" variant="solid">
                       {{ apiDetail.response.status }}
                     </UBadge>
-                    <span class="text-sm text-gray-600">响应时间: 234ms</span>
-                    <span class="text-sm text-gray-600">大小: 1.2KB</span>
+                    <span class="text-sm text-dimmed">响应时间: 234ms</span>
+                    <span class="text-sm text-dimmed">大小: 1.2KB</span>
                   </div>
 
                   <div class="mb-4">
@@ -382,13 +372,13 @@ const sendRequest = () => {
                   </div>
                 </div>
               </div>
-              <div v-else class="text-center py-8 text-gray-500">点击"发送请求"按钮查看响应结果</div>
+              <div v-else class="text-center py-8 text-muted">点击"发送请求"按钮查看响应结果</div>
             </div>
           </template>
 
           <template #mock>
             <div class="space-y-6">
-              <div class="text-center py-8 text-gray-500">高级Mock功能开发中...</div>
+              <div class="text-center py-8 text-muted">高级Mock功能开发中...</div>
             </div>
           </template>
         </UTabs>
@@ -398,9 +388,9 @@ const sendRequest = () => {
         <UCard>
           <div class="flex items-center justify-center min-h-[calc(100vh-14rem)]">
             <div class="text-center">
-              <UIcon name="i-heroicons-cursor-arrow-rays" class="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <UIcon name="i-heroicons-cursor-arrow-rays" class="mx-auto h-12 w-12 text-muted mb-4" />
               <h3 class="text-lg font-medium mb-2">选择一个接口</h3>
-              <p class="text-gray-500">从左侧列表中选择一个接口来查看详细信息</p>
+              <p class="text-muted">从左侧列表中选择一个接口来查看详细信息</p>
             </div>
           </div>
         </UCard>

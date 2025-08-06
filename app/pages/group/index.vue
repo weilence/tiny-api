@@ -204,7 +204,7 @@ onMounted(async () => {
             class="relative flex flex-col items-center p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-muted hover:shadow-md group"
             @click="navigateToProject(project.id)"
           >
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 z-1">
               <UButton
                 icon="i-heroicons-pencil-square"
                 size="xs"

@@ -85,7 +85,7 @@ onMounted(() => {
     >
       <!-- Combined indentation and parameter name area -->
       <div class="py-3 px-4 w-64 flex items-center" :style="{ paddingLeft: level * 16 + 16 + 'px' }">
-        <div v-if="hasChildren" class="flex items-center justify-center w-4 h-4 mr-2 text-gray-400 flex-shrink-0">
+        <div v-if="hasChildren" class="flex items-center justify-center w-4 h-4 mr-2 flex-shrink-0">
           <UIcon
             :name="isExpanded(nodeId) ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
             class="w-3 h-3"

@@ -54,8 +54,8 @@ const submitText = computed(() => (props.mode === 'edit' ? 'Update' : 'Create'))
     </template>
     <template #footer>
       <div class="button-group">
-        <UButton class="button" type="submit" form="create-group-form" color="primary">{{ submitText }}</UButton>
-        <UButton class="button" color="secondary" @click="$emit('close', false)">Cancel</UButton>
+        <UButton type="submit" form="create-group-form" color="primary">{{ submitText }}</UButton>
+        <UButton color="secondary" @click="$emit('close', false)">Cancel</UButton>
       </div>
     </template>
   </UModal>

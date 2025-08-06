@@ -134,7 +134,7 @@ const loadProject = async () => {
         </div>
       </div>
     </template>
-    <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-gray-500 mt-1">
+    <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-muted mt-1">
       找到 {{ filteredEndpoints.length }} 个结果
     </div>
     <TreeRoot
@@ -193,17 +193,17 @@ const loadProject = async () => {
 
     <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
-        <UIcon name="i-heroicons-magnifying-glass" class="mx-auto h-8 w-8 text-gray-400 mb-2" />
-        <p class="text-sm text-gray-500">没有找到匹配的接口</p>
-        <p class="text-xs text-gray-400 mt-1">尝试调整搜索关键词</p>
+        <UIcon name="i-heroicons-magnifying-glass" class="mx-auto h-8 w-8 mb-2" />
+        <p class="text-sm text-dimmed">没有找到匹配的接口</p>
+        <p class="text-xs text-toned mt-1">尝试调整搜索关键词</p>
       </div>
     </div>
 
     <div v-else-if="endpoints.length === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
-        <UIcon name="i-heroicons-document-plus" class="mx-auto h-8 w-8 text-gray-400 mb-2" />
-        <p class="text-sm text-gray-500">暂无API接口</p>
-        <p class="text-xs text-gray-400 mt-1">点击上方"Import"或"New"按钮添加接口</p>
+        <UIcon name="i-heroicons-document-plus" class="mx-auto h-8 w-8 mb-2" />
+        <p class="text-sm text-dimmed">暂无API接口</p>
+        <p class="text-xs text-toned mt-1">点击上方"Import"或"New"按钮添加接口</p>
       </div>
     </div>
   </UCard>

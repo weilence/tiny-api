@@ -81,81 +81,64 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold">
-          {{ allowRegister ? '创建新账户' : '注册已禁用' }}
-        </h2>
-        <p class="mt-2 text-center text-sm">
-          <template v-if="allowRegister">
-            已有账户？
-            <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>
-          </template>
-          <template v-else>
-            <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 返回登录 </NuxtLink>
-          </template>
-        </p>
+  <NuxtLayout name="auth">
+    <template #header>
+      <h2 class="mt-6 text-center text-3xl font-extrabold">
+        {{ allowRegister ? '创建新账户' : '注册已禁用' }}
+      </h2>
+      <p class="mt-2 text-center text-sm">
+        <template v-if="allowRegister">
+          已有账户？
+          <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>
+        </template>
+        <template v-else>
+          <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 返回登录 </NuxtLink>
+        </template>
+      </p>
+    </template>
+
+    <template #body>
+      <!-- 注册被禁用时显示的提示信息 -->
+      <div v-if="!allowRegister" class="text-center space-y-4">
+        <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-warning" />
+        <div>
+          <h3 class="text-lg font-medium mb-2">注册功能已关闭</h3>
+          <p class="text-muted">管理员已禁止新用户注册，如需账户请联系管理员。</p>
+        </div>
+        <UButton to="/auth/login" size="lg" class="w-full"> 前往登录 </UButton>
       </div>
 
-      <UCard class="p-6">
-        <!-- 注册被禁用时显示的提示信息 -->
-        <div v-if="!allowRegister" class="text-center space-y-4">
-          <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-warning" />
-          <div>
-            <h3 class="text-lg font-medium mb-2">注册功能已关闭</h3>
-            <p class="text-muted">
-              管理员已禁止新用户注册，如需账户请联系管理员。
-            </p>
-          </div>
-          <UButton to="/auth/login" size="lg" class="w-full">
-            前往登录
-          </UButton>
-        </div>
+      <!-- 注册表单 -->
+      <UForm v-else :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <UFormField label="邮箱地址" name="email" required>
+          <UInput v-model="state.email" type="email" placeholder="请输入邮箱地址" :disabled="loading" class="w-full" />
+        </UFormField>
 
-        <!-- 注册表单 -->
-        <UForm v-else :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
-          <UFormField label="邮箱地址" name="email" required>
-            <UInput
-              v-model="state.email"
-              type="email"
-              placeholder="请输入邮箱地址"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
+        <UFormField label="用户名" name="username" required>
+          <UInput v-model="state.username" type="text" placeholder="请输入用户名" :disabled="loading" class="w-full" />
+        </UFormField>
 
-          <UFormField label="用户名" name="username" required>
-            <UInput
-              v-model="state.username"
-              type="text"
-              placeholder="请输入用户名"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
+        <UFormField label="密码" name="password" required>
+          <UInput
+            v-model="state.password"
+            type="password"
+            placeholder="请输入密码（至少6位）"
+            :disabled="loading"
+            class="w-full"
+          />
+        </UFormField>
 
-          <UFormField label="密码" name="password" required>
-            <UInput
-              v-model="state.password"
-              type="password"
-              placeholder="请输入密码（至少6位）"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
+        <UFormField label="确认密码" name="confirmPassword" required>
+          <UInput
+            v-model="state.confirmPassword"
+            type="password"
+            placeholder="请再次输入密码"
+            :disabled="loading"
+            class="w-full"
+          />
+        </UFormField>
 
-          <UFormField label="确认密码" name="confirmPassword" required>
-            <UInput
-              v-model="state.confirmPassword"
-              type="password"
-              placeholder="请再次输入密码"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
-
-          <!-- <div>
+        <!-- <div>
             <UCheckbox v-model="state.agreeToTerms" :disabled="loading" required>
               <template #label>
                 我同意
@@ -166,9 +149,8 @@ useHead({
             </UCheckbox>
           </div> -->
 
-          <UButton type="submit" :loading="loading" size="lg" class="w-full"> 创建账户 </UButton>
-        </UForm>
-      </UCard>
-    </div>
-  </div>
+        <UButton type="submit" :loading="loading" size="lg" class="w-full"> 创建账户 </UButton>
+      </UForm>
+    </template>
+  </NuxtLayout>
 </template>

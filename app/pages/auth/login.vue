@@ -1,50 +1,42 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold">登录账户</h2>
-        <p class="mt-2 text-center text-sm">
-          或者
-          <NuxtLink to="/auth/register" class="font-medium text-primary-600 hover:text-primary-500">
-            创建新账户
+  <NuxtLayout name="auth">
+    <template #header>
+      <h2 class="mt-6 text-3xl font-extrabold">登录账户</h2>
+      <p class="mt-2 text-sm">
+        或者
+        <NuxtLink to="/auth/register" class="font-medium text-primary-600 hover:text-primary-500">
+          创建新账户
+        </NuxtLink>
+      </p>
+    </template>
+
+    <template #body>
+      <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <UFormField label="邮箱地址" name="email" required>
+          <UInput v-model="state.email" type="email" placeholder="请输入邮箱地址" :disabled="loading" class="w-full" />
+        </UFormField>
+
+        <UFormField label="密码" name="password" required>
+          <UInput
+            v-model="state.password"
+            type="password"
+            placeholder="请输入密码"
+            :disabled="loading"
+            class="w-full"
+          />
+        </UFormField>
+
+        <div class="flex items-center justify-between">
+          <UCheckbox v-model="state.remember" label="记住我" />
+          <NuxtLink to="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-500">
+            忘记密码？
           </NuxtLink>
-        </p>
-      </div>
+        </div>
 
-      <UCard class="p-6">
-        <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
-          <UFormField label="邮箱地址" name="email" required>
-            <UInput
-              v-model="state.email"
-              type="email"
-              placeholder="请输入邮箱地址"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="密码" name="password" required>
-            <UInput
-              v-model="state.password"
-              type="password"
-              placeholder="请输入密码"
-              :disabled="loading"
-              class="w-full"
-            />
-          </UFormField>
-
-          <div class="flex items-center justify-between">
-            <UCheckbox v-model="state.remember" label="记住我" />
-            <NuxtLink to="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-500">
-              忘记密码？
-            </NuxtLink>
-          </div>
-
-          <UButton type="submit" :loading="loading" size="lg" class="w-full"> 登录 </UButton>
-        </UForm>
-      </UCard>
-    </div>
-  </div>
+        <UButton type="submit" :loading="loading" size="lg" class="w-full"> 登录 </UButton>
+      </UForm>
+    </template>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">

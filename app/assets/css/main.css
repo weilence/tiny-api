@@ -1,14 +1,22 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
-[role="dialog"] .button-group {
-    @apply flex w-full justify-end;
+[role='dialog'] .button-group {
+  @apply flex w-full justify-end;
+}
+
+button {
+  @apply cursor-pointer;
 }
 
 .button-group {
-    @apply space-x-2
+  @apply space-x-2;
 }
 
-.button {
-    @apply px-4 rounded;
+.button-group button {
+  @apply px-4 rounded;
+}
+
+.text-link {
+  @apply text-primary-600 hover:text-primary-500 cursor-pointer;
 }
