@@ -5,11 +5,9 @@ export default defineEventHandler(async (event) => {
 
   // 检查credential是否是邮箱格式
   const isEmail = req.credential.includes('@');
-  
+
   const user = await prisma.user.findUnique({
-    where: isEmail 
-      ? { email: req.credential }
-      : { username: req.credential },
+    where: isEmail ? { email: req.credential } : { username: req.credential },
   });
 
   if (!user) {
@@ -26,17 +24,24 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  // 更新最后登录时间
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  });
+
   const token = uuidv4().replace(/-/g, '').toLowerCase();
   await redis.setUserSession(token, user.id, 3600);
 
   return {
-    id: user.id,
+    id: updatedUser.id,
     token: token,
-    email: user.email,
-    username: user.username,
-    name: user.name,
-    role: user.role,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    email: updatedUser.email,
+    username: updatedUser.username,
+    name: updatedUser.name,
+    role: updatedUser.role,
+    lastLoginAt: updatedUser.lastLoginAt,
+    createdAt: updatedUser.createdAt,
+    updatedAt: updatedUser.updatedAt,
   } as UserLoginRes;
 });

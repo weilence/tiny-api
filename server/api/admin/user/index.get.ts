@@ -6,6 +6,7 @@ export default defineEventHandler(async () => {
       username: true,
       name: true,
       role: true,
+      lastLoginAt: true,
       createdAt: true,
       updatedAt: true,
     },

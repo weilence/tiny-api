@@ -4,6 +4,7 @@ interface AdminUserListRes {
   username: string;
   name?: string | null;
   role: 'MEMBER' | 'ADMIN';
+  lastLoginAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

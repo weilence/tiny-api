@@ -15,6 +15,7 @@ interface UserInfo {
   username: string;
   name?: string;
   role?: 'MEMBER' | 'ADMIN';
+  lastLoginAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

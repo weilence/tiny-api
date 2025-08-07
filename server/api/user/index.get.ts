@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
     email: user.email,
     name: user.name,
     role: user.role,
+    lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   } as UserInfo;

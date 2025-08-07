@@ -35,7 +35,7 @@
               <UInput v-model="profileForm.username" :disabled="!editing" placeholder="输入用户名" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1"> 邮箱地址 </label>            
+              <label class="block text-sm font-medium mb-1"> 邮箱地址 </label>
               <UInput v-model="profileForm.email" type="email" :disabled="!editing" placeholder="输入邮箱地址" />
             </div>
           </div>
@@ -59,11 +59,13 @@
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <span class="text-muted">注册时间</span>
-              <span class="font-medium">{{ toCalendarDate(parseAbsoluteToLocal(user?.createdAt || '')) }}</span>
+              <span v-if="user?.createdAt" class="font-medium">{{
+                toCalendarDate(parseAbsoluteToLocal(user.createdAt))
+              }}</span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-muted">最后登录</span>
-              <span class="font-medium">今天</span>
+              <span class="font-medium">{{ formatLastLoginTime(user?.lastLoginAt) }}</span>
             </div>
           </div>
         </UCard>
@@ -75,7 +77,13 @@
           </template>
 
           <div class="space-y-3">
-            <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-key" @click="openChangePasswordModal">
+            <UButton
+              variant="outline"
+              size="sm"
+              class="w-full justify-start"
+              icon="i-heroicons-key"
+              @click="openChangePasswordModal"
+            >
               修改密码
             </UButton>
             <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-shield-check">
@@ -100,6 +108,7 @@
 
 <script setup lang="ts">
 import { parseAbsoluteToLocal, toCalendarDate } from '@internationalized/date';
+import { formatLastLoginTime } from '~/utils/date';
 import ModalChangePassword from './components/ModalChangePassword.vue';
 
 const { user, logout, refreshUser } = useAuth();

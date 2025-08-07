@@ -77,6 +77,11 @@
                 创建时间
               </th>
               <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                最后登录
+              </th>
+              <th
                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
                 操作
@@ -117,6 +122,9 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(user.createdAt) }}
               </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {{ formatLastLoginTime(user.lastLoginAt) }}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
                   <UButton
@@ -150,6 +158,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatLastLoginTime } from '~/utils/date';
 import { ModalConfirmDelete } from '#components';
 import ModalUserDetail from './components/ModalUserDetail.vue';
 
