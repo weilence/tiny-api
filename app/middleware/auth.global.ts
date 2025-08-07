@@ -7,8 +7,8 @@ export default defineNuxtRouteMiddleware((to) => {
     return;
   }
 
-  const isLoggedIn = localStorage.getItem('user_token');
-  if (!isLoggedIn) {
+  const { isLoggedIn } = useAuth();
+  if (!isLoggedIn.value) {
     return navigateTo('/auth/login');
   }
 });

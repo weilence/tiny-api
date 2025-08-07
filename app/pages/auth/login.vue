@@ -77,6 +77,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     await login({
       credential: event.data.credential,
       password: event.data.password,
+      remember: event.data.remember,
     });
 
     // 登录成功后的处理

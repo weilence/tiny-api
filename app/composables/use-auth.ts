@@ -1,17 +1,22 @@
 // 用户认证相关的 composable
 // 用户状态
 const user = ref<Serialized<UserInfo> | null>(null);
-const token = ref<string | null>(null);
+const remember = ref<boolean>(false); // 是否记住登录状态
 const isLoggedIn = computed(() => !!user.value && !!token.value);
+const token = ref<string | null>(null);
 
 export const useAuth = () => {
   // 从 localStorage 初始化用户状态
   const initializeAuth = async () => {
-    if (!import.meta.client) {
-      return;
+    remember.value = localStorage.getItem('remember_me') === 'true';
+
+    let userToken: string | null = null;
+    if (remember.value) {
+      userToken = localStorage.getItem('user_token');
+    } else {
+      userToken = sessionStorage.getItem('user_token');
     }
 
-    const userToken = localStorage.getItem('user_token');
     if (!userToken) {
       return;
     }
@@ -26,19 +31,23 @@ export const useAuth = () => {
   };
 
   // 登录函数
-  const login = async (credentials: { credential: string; password: string }) => {
+  const login = async (credentials: { credential: string; password: string; remember: boolean }) => {
     // 这里应该调用你的登录 API
     const res = await http.post('/auth/login', credentials);
 
     const { token: tokenData, ...userData } = res;
 
     // 保存令牌
-    if (import.meta.client) {
+    localStorage.setItem('remember_me', credentials.remember ? 'true' : 'false');
+    if (credentials.remember) {
       localStorage.setItem('user_token', tokenData);
+    } else {
+      sessionStorage.setItem('user_token', tokenData);
     }
 
     token.value = tokenData;
     user.value = userData;
+    remember.value = credentials.remember;
     return { success: true, user: userData };
   };
 
@@ -51,11 +60,7 @@ export const useAuth = () => {
 
   // 登出函数
   const logout = async () => {
-    user.value = null;
-
-    if (import.meta.client) {
-      localStorage.removeItem('user_token');
-    }
+    clearAuth();
 
     await http.post('/auth/logout');
     // 重定向到登录页
@@ -66,8 +71,10 @@ export const useAuth = () => {
   const clearAuth = () => {
     user.value = null;
 
-    if (import.meta.client) {
+    if (remember.value) {
       localStorage.removeItem('user_token');
+    } else {
+      sessionStorage.removeItem('user_token');
     }
   };
 
@@ -82,15 +89,6 @@ export const useAuth = () => {
     return { success: true, message: '重置邮件已发送' };
   };
 
-  // 获取认证头
-  const getAuthHeaders = () => {
-    if (import.meta.client) {
-      const token = localStorage.getItem('user_token');
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    }
-    return {};
-  };
-
   return {
     user: readonly(user),
     token: readonly(token),
@@ -102,6 +100,5 @@ export const useAuth = () => {
     logout,
     clearAuth,
     forgotPassword,
-    getAuthHeaders,
   };
 };
