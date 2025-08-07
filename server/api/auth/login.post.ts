@@ -3,10 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 export default defineEventHandler(async (event) => {
   const req = await readBody<UserLoginReq>(event);
 
+  // 检查credential是否是邮箱格式
+  const isEmail = req.credential.includes('@');
+  
   const user = await prisma.user.findUnique({
-    where: {
-      email: req.email,
-    },
+    where: isEmail 
+      ? { email: req.credential }
+      : { username: req.credential },
   });
 
   if (!user) {

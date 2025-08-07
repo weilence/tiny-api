@@ -5,7 +5,7 @@ interface UserRegisterReq {
 }
 
 interface UserLoginReq {
-  email: string;
+  credential: string; // 邮箱或用户名
   password: string;
 }
 

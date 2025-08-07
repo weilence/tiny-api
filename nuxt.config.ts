@@ -17,7 +17,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['reka-ui', '@vue/devtools-core', '@vue/devtools-kit', 'valibot'],
+      include: ['reka-ui', '@vue/devtools-core', '@vue/devtools-kit', 'valibot', '@internationalized/date'],
     },
   },
 

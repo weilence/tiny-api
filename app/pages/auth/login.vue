@@ -12,8 +12,8 @@
 
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
-        <UFormField label="邮箱地址" name="email" required>
-          <UInput v-model="state.email" type="email" placeholder="请输入邮箱地址" :disabled="loading" class="w-full" />
+        <UFormField label="邮箱或用户名" name="credential" required>
+          <UInput v-model="state.credential" placeholder="请输入邮箱地址或用户名" :disabled="loading" class="w-full" />
         </UFormField>
 
         <UFormField label="密码" name="password" required>
@@ -51,7 +51,7 @@ definePageMeta({
 
 // 表单验证模式
 const schema = v.object({
-  email: v.pipe(v.string(), v.email('请输入有效的邮箱地址')),
+  credential: v.pipe(v.string(), v.minLength(1, '请输入邮箱地址或用户名')),
   password: v.pipe(v.string(), v.minLength(1, '密码不能为空')),
   remember: v.optional(v.boolean(), false),
 });
@@ -60,7 +60,7 @@ type Schema = v.InferOutput<typeof schema>;
 
 // 响应式状态
 const state = reactive({
-  email: '',
+  credential: '',
   password: '',
   remember: false,
 });
@@ -75,7 +75,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
   try {
     await login({
-      email: event.data.email,
+      credential: event.data.credential,
       password: event.data.password,
     });
 
@@ -92,7 +92,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     console.error('登录失败:', error);
     toast.add({
       title: '登录失败',
-      description: '请检查您的邮箱和密码',
+      description: '请检查您的邮箱/用户名和密码',
       color: 'error',
     });
   } finally {

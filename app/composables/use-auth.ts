@@ -26,7 +26,7 @@ export const useAuth = () => {
   };
 
   // 登录函数
-  const login = async (credentials: { email: string; password: string }) => {
+  const login = async (credentials: { credential: string; password: string }) => {
     // 这里应该调用你的登录 API
     const res = await http.post('/auth/login', credentials);
 
