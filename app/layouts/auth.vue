@@ -27,5 +27,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  middleware: 'auth',
+});
+
 const colorMode = useColorMode();
 </script>

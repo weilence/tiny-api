@@ -2,6 +2,10 @@
 import ParameterTreeTable from './components/ParameterTreeTable.vue';
 import Left from './components/Left.vue';
 
+useHead({
+  title: 'Project Detail - API Doc',
+});
+
 const route = useRoute();
 const apiDetail = ref<ProjectGetResEndpoint>();
 

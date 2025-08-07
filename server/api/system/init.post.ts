@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
         email: req.email,
         password: hashedPassword,
         name: req.name || req.username,
+        role: 'ADMIN', // 默认角色为管理员
       },
     });
 

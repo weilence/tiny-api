@@ -3,6 +3,10 @@ import { ModalConfirmDelete } from '#components';
 import ModalGroupDetail from './components/ModalGroupDetail.vue';
 import ModalProjectDetail from './components/ModalProjectDetail.vue';
 
+useHead({
+  title: 'Project Management - API Doc',
+});
+
 const groups = ref<GroupQueryRes[]>([]);
 const projects = ref<ProjectQueryRes[]>([]);
 const selectedGroup = ref<string | null>(null);

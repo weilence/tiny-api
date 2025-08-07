@@ -165,7 +165,6 @@ import ModalUserDetail from './components/ModalUserDetail.vue';
 // 页面元数据
 definePageMeta({
   title: '用户管理',
-  middleware: 'admin',
 });
 
 // 响应式数据

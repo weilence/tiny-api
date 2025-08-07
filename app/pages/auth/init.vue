@@ -6,6 +6,7 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 definePageMeta({
   layout: false,
   title: '系统初始化',
+  middleware: 'auth',
 });
 
 // 表单验证模式
@@ -37,16 +38,6 @@ const state = reactive({
 const loading = ref(false);
 const completed = ref(false);
 const toast = useToast();
-
-// 检查系统状态
-const systemStatus = await http.get('/system/status').catch(() => {
-  return { initialized: false, userCount: 0 };
-});
-
-// 如果系统已初始化，重定向到登录页面
-if (systemStatus?.initialized) {
-  await navigateTo('/auth/login');
-}
 
 // 表单提交处理
 async function onSubmit(event: FormSubmitEvent<Schema>) {
