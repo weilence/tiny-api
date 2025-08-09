@@ -18,6 +18,7 @@
     "@prisma/adapter-pg": "^6.13.0",
     "@prisma/client": "^6.13.0",
     "argon2": "^0.43.1",
+    "ldap-authentication": "^3.3.4",
     "nuxt": "^4.0.3",
     "reka-ui": "^2.4.1",
     "swagger-client": "^3.35.6",

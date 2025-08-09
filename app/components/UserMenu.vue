@@ -25,11 +25,18 @@ const userMenuItems = computed(() => {
 
   // 如果是管理员，添加用户管理菜单
   if (user.value?.role === 'ADMIN') {
-    settingsItems.unshift({
-      label: '用户管理',
-      icon: 'i-heroicons-users',
-      onSelect: () => navigateTo('/admin/user'),
-    });
+    settingsItems.push(
+      {
+        label: '用户管理',
+        icon: 'i-heroicons-users',
+        onSelect: () => navigateTo('/admin/user'),
+      },
+      {
+        label: '系统设置',
+        icon: 'i-heroicons-cog-6-tooth',
+        onSelect: () => navigateTo('/admin/settings'),
+      }
+    );
   }
 
   settingsItems.push({

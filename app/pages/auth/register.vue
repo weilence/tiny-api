@@ -9,8 +9,7 @@ definePageMeta({
 });
 
 // 获取运行时配置
-const { public: publicConfig } = useRuntimeConfig();
-const allowRegister = publicConfig.allowRegister;
+const { settings } = useSettings();
 
 // 表单验证模式
 const schema = v.pipe(
@@ -84,10 +83,10 @@ useHead({
   <NuxtLayout name="auth">
     <template #header>
       <h2 class="mt-6 text-center text-3xl font-extrabold">
-        {{ allowRegister ? '创建新账户' : '注册已禁用' }}
+        {{ settings.allowRegister ? '创建新账户' : '注册已禁用' }}
       </h2>
       <p class="mt-2 text-center text-sm">
-        <template v-if="allowRegister">
+        <template v-if="settings.allowRegister">
           已有账户？
           <NuxtLink to="/auth/login" class="font-medium text-primary-600 hover:text-primary-500"> 立即登录 </NuxtLink>
         </template>
@@ -99,7 +98,7 @@ useHead({
 
     <template #body>
       <!-- 注册被禁用时显示的提示信息 -->
-      <div v-if="!allowRegister" class="text-center space-y-4">
+      <div v-if="!settings.allowRegister" class="text-center space-y-4">
         <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-warning" />
         <div>
           <h3 class="text-lg font-medium mb-2">注册功能已关闭</h3>

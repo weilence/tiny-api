@@ -1,8 +1,9 @@
-export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig();
+import { getAllowRegister } from '../../utils/settings';
 
+export default defineEventHandler(async (event) => {
+  const allow = await getAllowRegister();
   // 检查是否允许注册
-  if (!config.public.allowRegister) {
+  if (!allow) {
     throw createError({
       statusCode: 400,
       message: '管理员已禁止注册，请联系管理员',

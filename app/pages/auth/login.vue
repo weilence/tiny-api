@@ -12,6 +12,10 @@
 
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmit">
+        <UFormField label="登录方式" name="provider" required>
+          <URadioGroup v-model="state.provider" :items="providerOptions" orientation="horizontal" />
+        </UFormField>
+
         <UFormField label="邮箱或用户名" name="credential" required>
           <UInput v-model="state.credential" placeholder="请输入邮箱地址或用户名" :disabled="loading" class="w-full" />
         </UFormField>
@@ -54,6 +58,7 @@ const schema = v.object({
   credential: v.pipe(v.string(), v.minLength(1, '请输入邮箱地址或用户名')),
   password: v.pipe(v.string(), v.minLength(1, '密码不能为空')),
   remember: v.optional(v.boolean(), false),
+  provider: v.optional(v.picklist(['local', 'ldap']), 'local'),
 });
 
 type Schema = v.InferOutput<typeof schema>;
@@ -63,11 +68,16 @@ const state = reactive({
   credential: '',
   password: '',
   remember: false,
+  provider: 'local' as 'local' | 'ldap',
 });
 
 const loading = ref(false);
 const toast = useToast();
 const { login } = useAuth();
+const providerOptions = [
+  { label: '本地账号', value: 'local' },
+  { label: 'LDAP', value: 'ldap' },
+];
 
 // 表单提交处理
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -78,6 +88,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       credential: event.data.credential,
       password: event.data.password,
       remember: event.data.remember,
+      provider: event.data.provider,
     });
 
     // 登录成功后的处理

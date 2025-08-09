@@ -7,6 +7,7 @@ interface UserRegisterReq {
 interface UserLoginReq {
   credential: string; // 邮箱或用户名
   password: string;
+  provider?: 'local' | 'ldap';
 }
 
 interface UserInfo {

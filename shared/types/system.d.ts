@@ -12,5 +12,6 @@ interface SystemInitRes {
 
 interface SystemStatusRes {
   initialized: boolean;
-  userCount: number;
+  allowRegister: boolean;
+  ldapEnabled: boolean;
 }

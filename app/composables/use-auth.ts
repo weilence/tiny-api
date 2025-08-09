@@ -31,7 +31,12 @@ export const useAuth = () => {
   };
 
   // 登录函数
-  const login = async (credentials: { credential: string; password: string; remember: boolean }) => {
+  const login = async (credentials: {
+    credential: string;
+    password: string;
+    remember: boolean;
+    provider?: 'local' | 'ldap';
+  }) => {
     // 这里应该调用你的登录 API
     const res = await http.post('/auth/login', credentials);
 
@@ -93,7 +98,7 @@ export const useAuth = () => {
     user: readonly(user),
     token: readonly(token),
     isLoggedIn,
-    initializeAuth,
+    initAuth: initializeAuth,
     refreshUser,
     login,
     register,

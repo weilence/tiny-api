@@ -24,9 +24,7 @@ export default defineNuxtConfig({
   ssr: false,
 
   runtimeConfig: {
-    public: {
-      allowRegister: false,
-    },
+    public: {},
     databaseUrl: '',
     redis: {
       host: '127.0.0.1',
