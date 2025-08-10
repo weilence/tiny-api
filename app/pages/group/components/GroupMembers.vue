@@ -81,30 +81,32 @@ const removeMember = async (userId: string) => {
         </div>
       </div>
     </template>
-
-    <div v-if="loading" class="py-6 text-center text-muted">加载中...</div>
+    <div v-if="!props.groupId" class="py-16 text-center text-muted">请先选择分组</div>
     <div v-else>
-      <div v-if="members.length === 0" class="py-6 text-center text-muted">暂无成员</div>
-      <div v-else class="divide-y divide-accented">
-        <div v-for="m in members" :key="m.user.id" class="grid grid-cols-12 items-center py-3">
-          <div class="col-span-6 flex items-center gap-3 min-w-0">
-            <UAvatar :alt="m.user.username" />
-            <div class="min-w-0">
-              <div class="font-medium truncate">{{ m.user.name || m.user.username }}</div>
-              <div class="text-xs text-muted truncate">{{ m.user.email }}</div>
+      <div v-if="loading" class="py-6 text-center text-muted">加载中...</div>
+      <div v-else>
+        <div v-if="members.length === 0" class="py-6 text-center text-muted">暂无成员</div>
+        <div v-else class="divide-y divide-accented">
+          <div v-for="m in members" :key="m.user.id" class="grid grid-cols-12 items-center py-3">
+            <div class="col-span-6 flex items-center gap-3 min-w-0">
+              <UAvatar :alt="m.user.username" />
+              <div class="min-w-0">
+                <div class="font-medium truncate">{{ m.user.name || m.user.username }}</div>
+                <div class="text-xs text-muted truncate">{{ m.user.email }}</div>
+              </div>
             </div>
-          </div>
-          <div class="col-span-3">
-            <UBadge variant="soft">{{ m.role }}</UBadge>
-          </div>
-          <div class="col-span-3 text-right">
-            <div v-if="canManage" class="flex justify-end gap-2">
-              <USelect
-                :model-value="m.role"
-                :items="roleOptions"
-                @update:model-value="(val:any)=>changeRole(m.user.id, val)"
-              />
-              <UButton icon="i-heroicons-trash" color="error" variant="ghost" @click="removeMember(m.user.id)" />
+            <div class="col-span-3">
+              <UBadge variant="soft">{{ m.role }}</UBadge>
+            </div>
+            <div class="col-span-3 text-right">
+              <div v-if="canManage" class="flex justify-end gap-2">
+                <USelect
+                  :model-value="m.role"
+                  :items="roleOptions"
+                  @update:model-value="(val:any)=>changeRole(m.user.id, val)"
+                />
+                <UButton icon="i-heroicons-trash" color="error" variant="ghost" @click="removeMember(m.user.id)" />
+              </div>
             </div>
           </div>
         </div>

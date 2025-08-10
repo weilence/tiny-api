@@ -118,8 +118,8 @@ const navigateToProject = (projectId: string) => {
         </UButton>
       </div>
     </template>
-
-    <div class="grid grid-cols-6 gap-4 p-4">
+    <div v-if="!props.groupId" class="py-16 text-center text-muted">请先选择分组</div>
+    <div v-else class="grid grid-cols-6 gap-4 p-4">
       <div
         v-for="project in projects"
         :key="project.id"
