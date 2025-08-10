@@ -118,7 +118,7 @@ const handleCancel = () => {
             icon="i-heroicons-key"
           />
           <template v-if="mode === 'edit'" #help>
-            <p class="text-xs text-gray-500 dark:text-gray-400">留空则不修改密码</p>
+            <p class="text-xs text-muted">留空则不修改密码</p>
           </template>
         </UFormField>
 

@@ -3,7 +3,7 @@ import ParameterTreeTable from './components/ParameterTreeTable.vue';
 import Left from './components/Left.vue';
 
 useHead({
-  title: 'Project Detail - API Doc',
+  title: 'Project Detail',
 });
 
 const route = useRoute();

@@ -88,6 +88,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 // 页面标题
 useHead({
-  title: '忘记密码 - API 文档',
+  title: '忘记密码',
 });
 </script>

@@ -75,7 +75,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 // 页面标题
 useHead({
-  title: '注册 - API 文档',
+  title: '注册',
 });
 </script>
 

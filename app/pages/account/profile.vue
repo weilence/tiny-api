@@ -190,6 +190,6 @@ async function openChangePasswordModal() {
 
 // 页面标题
 useHead({
-  title: '个人资料 - API 文档',
+  title: '个人资料',
 });
 </script>

@@ -4,7 +4,7 @@ import ModalGroupDetail from './components/ModalGroupDetail.vue';
 import ModalProjectDetail from './components/ModalProjectDetail.vue';
 
 useHead({
-  title: 'Project Management - API Doc',
+  title: 'Project Management',
 });
 
 const groups = ref<GroupQueryRes[]>([]);

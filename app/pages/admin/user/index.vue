@@ -3,8 +3,8 @@
     <!-- 页面标题和操作 -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">用户管理</h1>
-        <p class="mt-2 text-gray-600 dark:text-gray-400">管理系统中的所有用户账户</p>
+        <h1 class="text-3xl font-bold text-highlighted">用户管理</h1>
+        <p class="mt-2 text-toned">管理系统中的所有用户账户</p>
       </div>
       <UButton icon="i-heroicons-plus" color="primary" @click="openCreateModal"> 创建用户 </UButton>
     </div>
@@ -13,36 +13,36 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <UCard>
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50">
-            <UIcon name="i-heroicons-users" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+            <UIcon name="i-heroicons-users" size="24" class="text-blue-600 dark:text-blue-400" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">总用户数</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ users.length }}</p>
+            <p class="text-sm font-medium text-toned">总用户数</p>
+            <p class="text-2xl font-bold text-highlighted">{{ users.length }}</p>
           </div>
         </div>
       </UCard>
 
       <UCard>
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-            <UIcon name="i-heroicons-shield-check" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          <div class="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+            <UIcon name="i-heroicons-shield-check" size="24" class="text-emerald-600 dark:text-emerald-400" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">管理员</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ adminCount }}</p>
+            <p class="text-sm font-medium text-toned">管理员</p>
+            <p class="text-2xl font-bold text-highlighted">{{ adminCount }}</p>
           </div>
         </div>
       </UCard>
 
       <UCard>
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-amber-100 dark:bg-amber-900/50">
-            <UIcon name="i-heroicons-user" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          <div class="p-3 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+            <UIcon name="i-heroicons-user" size="24" class="text-amber-600 dark:text-amber-400" />
           </div>
           <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">普通用户</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ memberCount }}</p>
+            <p class="text-sm font-medium text-toned">普通用户</p>
+            <p class="text-2xl font-bold text-highlighted">{{ memberCount }}</p>
           </div>
         </div>
       </UCard>
@@ -51,115 +51,35 @@
     <!-- 用户列表 -->
     <UCard>
       <template #header>
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">用户列表</h2>
-          <UInput v-model="searchQuery" placeholder="搜索用户..." icon="i-heroicons-magnifying-glass" class="w-80" />
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-xl font-semibold text-highlighted">用户列表</h2>
+          <UInput
+            v-model="searchQuery"
+            placeholder="搜索用户..."
+            icon="i-heroicons-magnifying-glass"
+            class="w-80"
+            @update:model-value="loadUsers(searchQuery)"
+          />
         </div>
       </template>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                用户信息
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                角色
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                创建时间
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                最后登录
-              </th>
-              <th
-                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-800">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10">
-                    <div
-                      class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center"
-                    >
-                      <span class="text-sm font-medium text-white">
-                        {{ user.username.charAt(0).toUpperCase() }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ user.username }}
-                    </div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ user.email }}
-                    </div>
-                    <div v-if="user.name" class="text-sm text-gray-500 dark:text-gray-400">
-                      {{ user.name }}
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <UBadge :color="user.role === 'ADMIN' ? 'error' : 'primary'" variant="subtle">
-                  {{ user.role === 'ADMIN' ? '管理员' : '普通用户' }}
-                </UBadge>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {{ formatDate(user.createdAt) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                {{ formatLastLoginTime(user.lastLoginAt) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end space-x-2">
-                  <UButton
-                    icon="i-heroicons-pencil"
-                    size="sm"
-                    variant="ghost"
-                    color="neutral"
-                    @click="openEditModal(user)"
-                  />
-                  <UButton
-                    v-if="user.id !== currentUserId"
-                    icon="i-heroicons-trash"
-                    size="sm"
-                    variant="ghost"
-                    color="error"
-                    @click="confirmDelete(user)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div v-if="filteredUsers.length === 0" class="text-center py-8">
-        <UIcon name="i-heroicons-users" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-500 dark:text-gray-400">暂无用户数据</p>
-      </div>
+      <UTable :data="users" :columns="columns" :loading="loading" sticky="header" class="flex-1">
+        <template #empty>
+          <div class="py-8 text-center">
+            <UIcon name="i-heroicons-users" class="w-12 h-12 text-dimmed mx-auto mb-4" />
+            <p class="text-muted">暂无用户数据</p>
+          </div>
+        </template>
+      </UTable>
     </UCard>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
+import type { TableColumn } from '@nuxt/ui';
+import { useDebounceFn } from '@vueuse/core';
 import { formatLastLoginTime } from '~/utils/date';
-import { ModalConfirmDelete } from '#components';
+import { ModalConfirmDelete, UBadge, UButton } from '#components';
 import ModalUserDetail from './components/ModalUserDetail.vue';
 
 // 页面元数据
@@ -187,23 +107,90 @@ const adminCount = computed(() => users.value.filter((u) => u.role === 'ADMIN').
 
 const memberCount = computed(() => users.value.filter((u) => u.role === 'MEMBER').length);
 
-const filteredUsers = computed(() => {
-  if (!searchQuery.value) return users.value;
-
-  const query = searchQuery.value.toLowerCase();
-  return users.value.filter(
-    (user) =>
-      user.username.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      (user.name && user.name.toLowerCase().includes(query))
-  );
-});
+// 表格列定义
+const columns: TableColumn<AdminUserListRes>[] = [
+  {
+    header: '用户信息',
+    cell: ({ row }) => (
+      <div class="flex items-center">
+        <div class="flex-shrink-0 h-10 w-10">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+            <span class="text-sm font-medium text-white">{row.original.username.charAt(0).toUpperCase()}</span>
+          </div>
+        </div>
+        <div class="ml-4">
+          <div class="text-sm font-medium text-highlighted">{row.original.username}</div>
+          <div class="text-sm text-muted">{row.original.email}</div>
+          {row.original.name && <div class="text-sm text-muted">{row.original.name}</div>}
+        </div>
+      </div>
+    ),
+  },
+  {
+    header: '角色',
+    cell: ({ row }) => (
+      <UBadge color={row.original.role === 'ADMIN' ? 'error' : 'primary'} variant="subtle">
+        {row.original.role === 'ADMIN' ? '管理员' : '普通用户'}
+      </UBadge>
+    ),
+  },
+  {
+    header: '创建时间',
+    accessorFn: (row) =>
+      new Date(row.createdAt).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+  },
+  { header: '最后登录', accessorFn: (row) => formatLastLoginTime(row.lastLoginAt) },
+  {
+    header: '操作',
+    meta: {
+      class: {
+        th: 'text-center',
+        td: 'text-center',
+      },
+    },
+    cell: ({ row }) => (
+      <>
+        <UButton
+          icon="i-heroicons-pencil"
+          size="sm"
+          variant="ghost"
+          color="neutral"
+          onClick={() => openEditModal(row.original)}
+        />
+        {row.original.id !== currentUserId.value && (
+          <UButton
+            icon="i-heroicons-trash"
+            size="sm"
+            variant="ghost"
+            color="error"
+            onClick={() => confirmDelete(row.original)}
+          />
+        )}
+      </>
+    ),
+  },
+];
 
 // 方法
-const loadUsers = async () => {
+let controller: AbortController | null = null;
+const loadUsers = useDebounceFn(async (q?: string) => {
+  if (controller) {
+    controller.abort(); // 取消上一个请求
+  }
+  controller = new AbortController(); // 创建新的控制器
   loading.value = true;
+
   try {
-    users.value = await http.get('/admin/user');
+    const data = await http.get<AdminUserListRes[], '/admin/user'>('/admin/user', q ? { q } : undefined, {
+      signal: controller.signal,
+    });
+    users.value = data;
   } catch (error) {
     console.error('加载用户列表失败:', error);
     toast.add({
@@ -214,7 +201,7 @@ const loadUsers = async () => {
   } finally {
     loading.value = false;
   }
-};
+}, 400);
 
 const openCreateModal = async () => {
   const instance = modalUserDetail.open({
@@ -257,16 +244,6 @@ const confirmDelete = async (user: AdminUserListRes) => {
   }
 };
 
-const formatDate = (date: Date | string) => {
-  return new Date(date).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
 // 页面加载时获取数据
 onMounted(() => {
   loadUsers();
@@ -274,6 +251,6 @@ onMounted(() => {
 
 // 页面标题
 useHead({
-  title: '用户管理 - API 文档',
+  title: '用户管理',
 });
 </script>

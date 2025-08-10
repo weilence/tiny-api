@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 space-y-6">
+  <div class="max-w-7xl mx-auto p-6 space-y-6">
     <h1 class="text-2xl font-semibold">系统设置</h1>
 
     <UCard>
@@ -22,7 +22,7 @@
         <UFormField label="启用 LDAP" name="enabled">
           <USwitch v-model="ldapState.enabled" />
         </UFormField>
-        <UFormField label="URL" name="url">
+        <UFormField label="URL" name="url" required>
           <UInput v-model="ldapState.url" placeholder="ldap://127.0.0.1:389" class="w-full" />
         </UFormField>
         <UFormField label="Admin DN" name="adminDn">
@@ -94,9 +94,9 @@ const ldapState = reactive<LdapSchema>({
   baseDn: '',
   adminDn: '',
   adminPassword: '',
-  usernameAttr: 'sAMAccountName',
-  nameAttr: 'cn',
-  emailAttr: 'mail',
+  usernameAttr: '',
+  nameAttr: '',
+  emailAttr: '',
   tlsRejectUnauthorized: true,
   timeoutMs: 5000,
 });

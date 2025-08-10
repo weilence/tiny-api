@@ -6,7 +6,6 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 definePageMeta({
   layout: false,
   title: '系统初始化',
-  middleware: 'auth',
 });
 
 // 表单验证模式
@@ -78,7 +77,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
 // 页面标题
 useHead({
-  title: '系统初始化 - API 文档',
+  title: '系统初始化',
 });
 </script>
 

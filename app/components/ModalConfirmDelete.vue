@@ -34,12 +34,12 @@ const handleConfirm = async () => {
       <div class="py-4">
         <div class="flex items-center mb-4">
           <div class="flex-shrink-0">
-            <div class="w-10 h-10 mx-auto bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600 dark:text-red-400" />
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center">
+              <UIcon name="i-heroicons-exclamation-triangle" size="24" class="text-red-600 dark:text-red-400" />
             </div>
           </div>
           <div class="ml-4">
-            <p class="text-gray-900 dark:text-white">
+            <p class="text-highlighted">
               {{ description }}
             </p>
           </div>
