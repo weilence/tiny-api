@@ -2,6 +2,7 @@ export const baseURL = '/api';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const { token, clearAuth } = useAuth();
+  const overlay = useOverlay();
 
   const api = $fetch.create({
     baseURL: baseURL,
@@ -14,6 +15,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     async onResponseError({ response }) {
       if (response.status === 401) {
         clearAuth();
+        overlay.closeAll();
         await nuxtApp.runWithContext(() => navigateTo('/auth/login'));
       }
     },

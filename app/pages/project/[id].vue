@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ParameterTreeTable from './components/ParameterTreeTable.vue';
 import Left from './components/Left.vue';
+import ProjectMembers from './components/ProjectMembers.vue';
 
 useHead({
   title: 'Project Detail',
@@ -10,6 +11,12 @@ const route = useRoute();
 const apiDetail = ref<ProjectGetResEndpoint>();
 
 const projectId = route.params.id as string;
+
+const selectedMain = ref('api');
+const mainTabs = [
+  { label: 'API', value: 'api', slot: 'api' },
+  { label: '成员', value: 'members', slot: 'members' },
+];
 
 const toast = useToast();
 const addHeader = () => {
@@ -94,12 +101,14 @@ const sendRequest = () => {
       </nav>
     </div>
 
-    <div class="flex gap-6">
-      <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
-        <Left :project-id="projectId" @select="(e: any) => apiDetail= e" />
-      </div>
+    <UTabs v-model="selectedMain" :items="mainTabs" class="w-full">
+      <template #api>
+        <div class="flex gap-6">
+          <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
+            <Left :project-id="projectId" @select="(e: any) => (apiDetail = e)" />
+          </div>
 
-      <UCard v-if="apiDetail" class="min-w-0 flex-[2_1_66.67%]">
+          <UCard v-if="apiDetail" class="min-w-0 flex-[2_1_66.67%]">
         <template #header>
           <div class="space-y-3">
             <div class="flex items-center justify-between">
@@ -386,19 +395,24 @@ const sendRequest = () => {
             </div>
           </template>
         </UTabs>
-      </UCard>
+          </UCard>
 
-      <div v-else class="min-w-0 flex-[2_1_66.67%]">
-        <UCard>
-          <div class="flex items-center justify-center min-h-[calc(100vh-14rem)]">
-            <div class="text-center">
-              <UIcon name="i-heroicons-cursor-arrow-rays" class="mx-auto h-12 w-12 text-muted mb-4" />
-              <h3 class="text-lg font-medium mb-2">选择一个接口</h3>
-              <p class="text-muted">从左侧列表中选择一个接口来查看详细信息</p>
-            </div>
+          <div v-else class="min-w-0 flex-[2_1_66.67%]">
+            <UCard>
+              <div class="flex items-center justify-center min-h-[calc(100vh-14rem)]">
+                <div class="text-center">
+                  <UIcon name="i-heroicons-cursor-arrow-rays" class="mx-auto h-12 w-12 text-muted mb-4" />
+                  <h3 class="text-lg font-medium mb-2">选择一个接口</h3>
+                  <p class="text-muted">从左侧列表中选择一个接口来查看详细信息</p>
+                </div>
+              </div>
+            </UCard>
           </div>
-        </UCard>
-      </div>
-    </div>
+        </div>
+      </template>
+      <template #members>
+        <ProjectMembers :project-id="projectId" />
+      </template>
+    </UTabs>
   </div>
 </template>

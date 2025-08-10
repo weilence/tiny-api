@@ -230,18 +230,19 @@ const confirmDelete = async (user: AdminUserListRes) => {
     description: `确定要删除用户 ${user.username} 吗？此操作不可逆。`,
     ok: async () => {
       await http.delete(`/admin/user/${user.id}`);
+      toast.add({
+        title: '删除成功',
+        description: '用户已被删除',
+        color: 'success',
+      });
     },
   });
 
-  if (await instance.result) {
-    await loadUsers(); // 只需要刷新列表，删除操作已在模态框中完成
-
-    toast.add({
-      title: '删除成功',
-      description: '用户已被删除',
-      color: 'success',
-    });
+  if (!(await instance.result)) {
+    return;
   }
+
+  await loadUsers();
 };
 
 // 页面加载时获取数据

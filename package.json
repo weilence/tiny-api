@@ -17,6 +17,7 @@
     "@nuxt/ui": "^3.3.0",
     "@prisma/adapter-pg": "^6.13.0",
     "@prisma/client": "^6.13.0",
+    "@vueuse/core": "^13.6.0",
     "argon2": "^0.43.1",
     "ldap-authentication": "^3.3.4",
     "nuxt": "^4.0.3",

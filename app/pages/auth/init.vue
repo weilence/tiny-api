@@ -103,7 +103,7 @@ useHead({
           <p class="text-dimmed">管理员账户已创建，即将跳转到登录页面</p>
         </div>
         <div class="flex justify-center">
-          <UButton to="/auth/login" size="lg" class="min-w-32"> 立即登录 </UButton>
+          <UButton size="lg" class="min-w-32" @click="navigateTo('/auth/login')"> 立即登录 </UButton>
         </div>
       </div>
 

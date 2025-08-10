@@ -28,6 +28,15 @@ model Group {
   projects    Project[]
 }
 
+model GroupUser {
+  groupId String
+  userId  String
+  // Use ProjectRole enum to unify roles across Group and Project (GUEST/DEVELOPER/ADMIN)
+  role    ProjectRole @default(GUEST)
+
+  @@id([groupId, userId])
+}
+
 model Project {
   id             String          @id @default(cuid())
   name           String
@@ -38,6 +47,20 @@ model Project {
   updatedAt      DateTime        @updatedAt
   group          Group           @relation(fields: [groupId], references: [id])
   endpointGroups EndpointGroup[]
+}
+
+model ProjectUser {
+  projectId String
+  userId    String
+  role      ProjectRole @default(GUEST)
+
+  @@id([projectId, userId])
+}
+
+enum ProjectRole {
+  GUEST
+  DEVELOPER
+  ADMIN
 }
 
 model EndpointGroup {
