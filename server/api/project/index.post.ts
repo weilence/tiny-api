@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const body = await readBody<ProjectCreateReq>(event);
-  const userId = event.context.auth?.user as string;
+  const userId = event.context.auth.user;
 
   const project = await prisma.$transaction(async (tx) => {
     const p = await tx.project.create({

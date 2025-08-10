@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const token = event.context.auth?.token;
+  const token = event.context.auth.token;
   try {
     // 删除 Redis 中的会话
     await redis.deleteUserSession(token);

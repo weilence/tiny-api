@@ -1,5 +1,12 @@
+import { useValidatedParams, v } from 'h3-valibot';
+
 export default defineEventHandler(async (event) => {
-  const groupId = event.context.params!.id as string;
+  const { id: groupId } = await useValidatedParams(
+    event,
+    v.object({
+      id: v.string(),
+    })
+  );
   const members = await prisma.groupUser.findMany({ where: { groupId } });
 
   const users = await prisma.user.findMany({
@@ -14,7 +21,7 @@ export default defineEventHandler(async (event) => {
     role: m.role as unknown as MemberRole,
   }));
 
-  const currentUserId = event.context.auth?.user as string | undefined;
+  const currentUserId = event.context.auth.user;
   const selfRole = members.find((m) => m.userId === currentUserId)?.role || 'GUEST';
 
   return { members: list, selfRole: selfRole as any } as GroupMembersGetRes;

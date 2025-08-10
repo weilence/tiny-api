@@ -35,6 +35,9 @@ importers:
       argon2:
         specifier: ^0.43.1
         version: 0.43.1
+      h3-valibot:
+        specifier: ^0.0.9
+        version: 0.0.9(@nuxt/kit@4.0.1(magicast@0.3.5))(@nuxt/schema@4.0.3)(valibot@1.1.0(typescript@5.9.2))
       ldap-authentication:
         specifier: ^3.3.4
         version: 3.3.4
@@ -3555,6 +3558,18 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  h3-valibot@0.0.9:
+    resolution: {integrity: sha512-JGueCa0s4EeOMrDjnJ/IoEKLXyYzXtv4+VH/V7xo6IkStOR9HrKTikGd/QvmOfy4azsOjahCrqwryDI9eC8CZg==}
+    peerDependencies:
+      '@nuxt/kit': '>=3'
+      '@nuxt/schema': '>=3'
+      valibot: '>=0.42.0 || >=1'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      '@nuxt/schema':
+        optional: true
+
   h3@1.15.3:
     resolution: {integrity: sha512-z6GknHqyX0h9aQaTx22VZDf6QyZn+0Nh+Ym8O/u0SGSkyF5cuTJYKlc8MkzW3Nzf9LE1ivcpmYC3FUGpywhuUQ==}
 
@@ -6825,7 +6840,7 @@ snapshots:
       defu: 6.1.4
       esbuild: 0.25.8
       fontaine: 0.6.0
-      h3: 1.15.3
+      h3: 1.15.4
       jiti: 2.5.0
       magic-regexp: 0.10.0
       magic-string: 0.30.17
@@ -10007,6 +10022,14 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
+  h3-valibot@0.0.9(@nuxt/kit@4.0.1(magicast@0.3.5))(@nuxt/schema@4.0.3)(valibot@1.1.0(typescript@5.9.2)):
+    dependencies:
+      h3: 1.15.4
+      valibot: 1.1.0(typescript@5.9.2)
+    optionalDependencies:
+      '@nuxt/kit': 4.0.1(magicast@0.3.5)
+      '@nuxt/schema': 4.0.3
+
   h3@1.15.3:
     dependencies:
       cookie-es: 1.2.2
@@ -10398,7 +10421,7 @@ snapshots:
       crossws: 0.3.5
       defu: 6.1.4
       get-port-please: 3.2.0
-      h3: 1.15.3
+      h3: 1.15.4
       http-shutdown: 1.2.2
       jiti: 2.5.1
       mlly: 1.7.4

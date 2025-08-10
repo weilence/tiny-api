@@ -1,5 +1,12 @@
+import { useValidatedParams, v } from 'h3-valibot';
+
 export default defineEventHandler(async (event) => {
-  const groupId = event.context.params!.id as string;
+  const { id: groupId } = await useValidatedParams(
+    event,
+    v.object({
+      id: v.string(),
+    })
+  );
   const body = await readBody<{ userId: string; role: MemberRole }>(event);
   if (!body?.userId || !body?.role) throw createError({ statusCode: 400, message: 'userId and role are required' });
 

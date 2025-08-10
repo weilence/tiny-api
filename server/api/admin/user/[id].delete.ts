@@ -1,6 +1,8 @@
+import { useValidatedParams, v } from 'h3-valibot';
+
 export default defineEventHandler(async (event) => {
-  const currentUserId = event.context.auth?.user;
-  const targetUserId = getRouterParam(event, 'id');
+  const currentUserId = event.context.auth.user;
+  const { id: targetUserId } = await useValidatedParams(event, v.object({ id: v.string() }));
 
   if (!targetUserId) {
     throw createError({

@@ -1,8 +1,7 @@
+import { useValidatedParams, v } from 'h3-valibot';
+
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id');
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'Group ID is required' });
-  }
+  const { id } = await useValidatedParams(event, v.object({ id: v.string() }));
 
   const body = await readBody<GroupUpdateReq>(event);
   const group = await prisma.group.update({

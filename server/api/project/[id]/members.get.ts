@@ -1,5 +1,14 @@
+import { useValidatedParams, v } from 'h3-valibot';
+
 export default defineEventHandler(async (event) => {
-  const projectId = event.context.params!.id as string;
+  const { id: projectId } = await useValidatedParams(
+    event,
+    v.object({
+      id: v.string(),
+      userId: v.string(),
+    })
+  );
+
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { groupId: true } });
   if (!project) throw createError({ statusCode: 404, message: 'Project not found' });
 
@@ -13,7 +22,7 @@ export default defineEventHandler(async (event) => {
   });
   const umap = new Map(users.map((u) => [u.id, u]));
 
-  const currentUserId = event.context.auth?.user as string | undefined;
+  const currentUserId = event.context.auth.user;
   const gRole = groupMembers.find((m) => m.userId === currentUserId)?.role || 'GUEST';
   const pRole = localMembers.find((m) => m.userId === currentUserId)?.role || 'GUEST';
   const order: MemberRole[] = ['GUEST', 'DEVELOPER', 'ADMIN'];

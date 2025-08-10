@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const userId = event.context.auth?.user;
+  const userId = event.context.auth.user;
   const req = await readBody<UserUpdateReq>(event);
   const user = await prisma.user.findUnique({
     where: {

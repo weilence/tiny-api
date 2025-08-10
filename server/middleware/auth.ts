@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
 
   // 只处理 API 请求
   if (!path.startsWith('/api/') || excludedPaths.includes(path)) {
+    event.context.auth = { user: '', token: '' };
     return;
   }
 

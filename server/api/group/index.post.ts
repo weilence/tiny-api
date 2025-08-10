@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const body = await readBody<GroupCreateReq>(event);
-  const userId = event.context.auth?.user as string;
+  const userId = event.context.auth.user;
 
   const group = await prisma.$transaction(async (tx) => {
     const g = await tx.group.create({ data: body });
