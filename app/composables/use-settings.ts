@@ -1,12 +1,7 @@
-const settings = ref<Partial<SystemStatusRes>>({});
-
 export const useSettings = () => {
-  const initSettings = async () => {
-    settings.value = (await http.get('/system/status')) || {};
-  };
-
+  const { data, refresh } = useAsyncData<SystemStatusRes>('settings', () => http.get('/system/status'));
   return {
-    settings,
-    initSettings,
+    settings: data,
+    refreshSettings: refresh,
   };
 };

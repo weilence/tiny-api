@@ -53,6 +53,10 @@ definePageMeta({
   title: '登录',
 });
 
+const loading = ref(false);
+const toast = useToast();
+const { login, rememberMe } = useAuth();
+
 // 表单验证模式
 const schema = v.object({
   credential: v.pipe(v.string(), v.minLength(1, '请输入邮箱地址或用户名')),
@@ -67,13 +71,10 @@ type Schema = v.InferOutput<typeof schema>;
 const state = reactive({
   credential: '',
   password: '',
-  remember: false,
+  remember: rememberMe.value,
   provider: 'local' as 'local' | 'ldap',
 });
 
-const loading = ref(false);
-const toast = useToast();
-const { login } = useAuth();
 const providerOptions = [
   { label: '本地账号', value: 'local' },
   { label: 'LDAP', value: 'ldap' },

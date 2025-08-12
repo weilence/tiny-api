@@ -89,16 +89,6 @@
             <UButton variant="outline" size="sm" class="w-full justify-start" icon="i-heroicons-shield-check">
               安全设置
             </UButton>
-            <UButton
-              variant="outline"
-              size="sm"
-              class="w-full justify-start"
-              icon="i-heroicons-arrow-right-on-rectangle"
-              color="error"
-              @click="handleLogout"
-            >
-              退出登录
-            </UButton>
           </div>
         </UCard>
       </div>
@@ -111,7 +101,7 @@ import { parseAbsoluteToLocal, toCalendarDate } from '@internationalized/date';
 import { formatLastLoginTime } from '~/utils/date';
 import ModalChangePassword from './components/ModalChangePassword.vue';
 
-const { user, logout, refreshUser } = useAuth();
+const { user, refreshUser } = useAuth();
 const toast = useToast();
 const overlay = useOverlay();
 
@@ -170,13 +160,8 @@ async function saveProfile() {
     });
   } finally {
     saving.value = false;
-    refreshUser();
+    await refreshUser();
   }
-}
-
-// 退出登录
-function handleLogout() {
-  logout();
 }
 
 // 打开修改密码弹窗

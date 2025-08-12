@@ -46,6 +46,13 @@ export async function parseMultipartObject<T>(event: any) {
 export default defineEventHandler(async (event) => {
   const req = await parseMultipartObject<ProjectImportReq>(event);
   const { id: projectId } = await useValidatedParams(event, v.object({ id: v.string() }));
+  const userId = event.context.auth.user;
+
+  // 检查用户是否有Project的DEVELOPER以上权限（导入API文档需要编辑权限）
+  const hasPermission = await checkProjectPermission(userId, projectId, 'DEVELOPER');
+  if (!hasPermission) {
+    throwPermissionError('您没有权限导入此项目的API文档');
+  }
 
   let apiDoc: any;
   if (req.importType === 'url') {

@@ -22,6 +22,7 @@
     "h3-valibot": "^0.0.9",
     "ldap-authentication": "^3.3.4",
     "nuxt": "^4.0.3",
+    "ofetch": "^1.4.1",
     "reka-ui": "^2.4.1",
     "swagger-client": "^3.35.6",
     "unstorage": "^1.16.1",

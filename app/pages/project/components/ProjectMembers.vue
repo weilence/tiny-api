@@ -112,7 +112,7 @@ const removeMember = async (userId: string) => {
                 <USelect
                   :model-value="m.role"
                   :items="roleOptions"
-                  @update:model-value="(val:any)=>changeRole(m.user.id, val)"
+                  @update:model-value="(val) => changeRole(m.user.id, val)"
                 />
                 <UButton icon="i-heroicons-trash" color="error" variant="ghost" @click="removeMember(m.user.id)" />
               </div>

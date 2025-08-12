@@ -5,7 +5,6 @@ export default defineEventHandler(async (event) => {
     event,
     v.object({
       id: v.string(),
-      userId: v.string(),
     })
   );
 

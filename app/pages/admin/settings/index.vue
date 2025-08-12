@@ -60,6 +60,7 @@ import type { FormSubmitEvent } from '@nuxt/ui';
 import * as v from 'valibot';
 
 const toast = useToast();
+const { refreshSettings } = useSettings();
 const savingAllow = ref(false);
 const savingLdap = ref(false);
 
@@ -116,6 +117,8 @@ async function onSaveAllow(event: FormSubmitEvent<AllowSchema>) {
   } finally {
     savingAllow.value = false;
   }
+
+  await refreshSettings();
 }
 
 async function onSaveLdap(event: FormSubmitEvent<LdapSchema>) {

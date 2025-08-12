@@ -19,12 +19,9 @@ const handleConfirm = async () => {
   try {
     await props.ok(); // 调用传入的删除函数
     emit('close', true); // true 表示删除成功，需要刷新数据
-  } catch (error) {
-    console.error('Delete user error:', error);
-    emit('close', false); // false 表示删除失败
+  } finally {
+    loading.value = false;
   }
-
-  loading.value = false;
 };
 </script>
 

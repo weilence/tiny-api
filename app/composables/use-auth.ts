@@ -1,34 +1,13 @@
-// 用户认证相关的 composable
-// 用户状态
-const user = ref<Serialized<UserInfo> | null>(null);
-const remember = ref<boolean>(false); // 是否记住登录状态
-const isLoggedIn = computed(() => !!user.value && !!token.value);
-const token = ref<string | null>(null);
-
 export const useAuth = () => {
-  // 从 localStorage 初始化用户状态
-  const initializeAuth = async () => {
-    remember.value = localStorage.getItem('remember_me') === 'true';
+  const overlay = useOverlay();
 
-    let userToken: string | null = null;
-    if (remember.value) {
-      userToken = localStorage.getItem('user_token');
-    } else {
-      userToken = sessionStorage.getItem('user_token');
-    }
-
-    if (!userToken) {
-      return;
-    }
-
-    token.value = userToken;
-    await refreshUser();
-  };
-
-  const refreshUser = async () => {
-    const res = await http.get('/user');
-    user.value = res;
-  };
+  const rememberMe = useState<boolean>('remember_me', () => localStorage.getItem('remember_me') === 'true');
+  const token = useState<string | null>('token', () =>
+    rememberMe.value ? localStorage.getItem('user_token') : sessionStorage.getItem('user_token')
+  );
+  const { data: user, refresh: refreshUser } = useAsyncData<Serialized<UserInfo> | null>('user', () =>
+    http.get('/user')
+  );
 
   // 登录函数
   const login = async (credentials: {
@@ -50,9 +29,9 @@ export const useAuth = () => {
       sessionStorage.setItem('user_token', tokenData);
     }
 
+    rememberMe.value = credentials.remember;
     token.value = tokenData;
     user.value = userData;
-    remember.value = credentials.remember;
     return { success: true, user: userData };
   };
 
@@ -66,17 +45,14 @@ export const useAuth = () => {
   // 登出函数
   const logout = async () => {
     clearAuth();
-
-    await http.post('/auth/logout');
-    // 重定向到登录页
-    navigateTo('/auth/login');
+    overlay.closeAll();
+    await navigateTo('/auth/login');
   };
 
   // 清除认证信息
   const clearAuth = () => {
-    user.value = null;
-
-    if (remember.value) {
+    token.value = null;
+    if (rememberMe.value) {
       localStorage.removeItem('user_token');
     } else {
       sessionStorage.removeItem('user_token');
@@ -97,8 +73,7 @@ export const useAuth = () => {
   return {
     user: readonly(user),
     token: readonly(token),
-    isLoggedIn,
-    initAuth: initializeAuth,
+    rememberMe: readonly(rememberMe),
     refreshUser,
     login,
     register,

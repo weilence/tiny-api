@@ -15,11 +15,7 @@
           </ul>
         </nav>
         <div class="flex items-center">
-          <USwitch
-            v-model="isDark"
-            unchecked-icon="i-heroicons-sun"
-            checked-icon="i-heroicons-moon"
-          />
+          <USwitch v-model="isDark" unchecked-icon="i-heroicons-sun" checked-icon="i-heroicons-moon" />
           <UserMenu />
         </div>
       </div>
@@ -37,10 +33,10 @@ const colorMode = useColorMode();
 
 const isDark = computed({
   get() {
-    return colorMode.value === 'dark'
+    return colorMode.value === 'dark';
   },
   set(_isDark) {
-    colorMode.preference = _isDark ? 'dark' : 'light'
-  }
-})
+    colorMode.preference = _isDark ? 'dark' : 'light';
+  },
+});
 </script>

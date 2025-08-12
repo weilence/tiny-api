@@ -23,6 +23,7 @@ export default defineNuxtConfig({
         '@vueuse/core',
         '@vue/devtools-kit',
         'valibot',
+        'h3-valibot',
         '@internationalized/date',
       ],
     },
