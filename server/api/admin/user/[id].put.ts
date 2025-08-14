@@ -12,6 +12,15 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<AdminUserUpdateReq>(event);
 
+  // 禁止用户修改自己的角色
+  const currentUserId = event.context.auth.user;
+  if (body.role && currentUserId === targetUserId) {
+    throw createError({
+      statusCode: 400,
+      message: '不能修改自己的角色',
+    });
+  }
+
   // 检查目标用户是否存在
   const targetUser = await prisma.user.findUnique({
     where: { id: targetUserId },

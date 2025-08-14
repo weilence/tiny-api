@@ -55,6 +55,10 @@ const title = computed(() => (props.mode === 'create' ? '创建用户' : '编辑
 const submitText = computed(() => (props.mode === 'create' ? '创建' : '更新'));
 const schema = computed(() => (props.mode === 'create' ? createSchema : editSchema));
 
+// 当前登录用户
+const { user } = useAuth();
+const isEditingSelf = computed(() => props.mode === 'edit' && user.value?.id === props.userData?.id);
+
 // 方法
 const onSubmit = async (event: FormSubmitEvent<CreateSchema | EditSchema>) => {
   loading.value = true;
@@ -68,7 +72,10 @@ const onSubmit = async (event: FormSubmitEvent<CreateSchema | EditSchema>) => {
         color: 'success',
       });
     } else {
-      await http.put(`/admin/user/${props.userData!.id}`, event.data);
+      // 如果编辑的是当前用户，前端不允许修改自己的角色，移除 role 字段
+      const payload = { ...event.data } as any;
+      if (isEditingSelf.value) delete payload.role;
+      await http.put(`/admin/user/${props.userData!.id}`, payload);
       toast.add({
         title: '更新成功',
         description: '用户信息已更新',
@@ -123,7 +130,15 @@ const handleCancel = () => {
         </UFormField>
 
         <UFormField label="角色" name="role" required>
-          <USelect v-model="state.role" :items="roleOptions" placeholder="请选择用户角色" />
+          <USelect
+            v-model="state.role"
+            :items="roleOptions"
+            placeholder="请选择用户角色"
+            :disabled="isEditingSelf"
+          />
+          <template v-if="isEditingSelf" #help>
+            <p class="text-xs text-muted">不能修改自己的角色</p>
+          </template>
         </UFormField>
       </UForm>
     </template>
