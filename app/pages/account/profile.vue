@@ -101,7 +101,7 @@ import { parseAbsoluteToLocal, toCalendarDate } from '@internationalized/date';
 import { formatLastLoginTime } from '~/utils/date';
 import ModalChangePassword from './components/ModalChangePassword.vue';
 
-const { user, refreshUser } = useAuth();
+const { user, refreshUser } = useUser();
 const toast = useToast();
 const overlay = useOverlay();
 

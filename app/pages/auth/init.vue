@@ -37,6 +37,7 @@ const state = reactive({
 const loading = ref(false);
 const completed = ref(false);
 const toast = useToast();
+const { refreshSettings } = useSettings();
 
 // 表单提交处理
 async function onSubmit(event: FormSubmitEvent<Schema>) {
@@ -51,6 +52,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     });
 
     if (response.success) {
+      await refreshSettings();
       completed.value = true;
       toast.add({
         title: '初始化成功',
@@ -103,7 +105,7 @@ useHead({
           <p class="text-dimmed">管理员账户已创建，即将跳转到登录页面</p>
         </div>
         <div class="flex justify-center">
-          <UButton size="lg" class="min-w-32" @click="navigateTo('/auth/login')"> 立即登录 </UButton>
+          <UButton type="button" size="lg" class="min-w-32" @click="navigateTo('/auth/login')"> 立即登录 </UButton>
         </div>
       </div>
 

@@ -5,9 +5,6 @@ export const useAuth = () => {
   const token = useState<string | null>('token', () =>
     rememberMe.value ? localStorage.getItem('user_token') : sessionStorage.getItem('user_token')
   );
-  const { data: user, refresh: refreshUser } = useAsyncData<Serialized<UserInfo> | null>('user', () =>
-    http.get('/user')
-  );
 
   // 登录函数
   const login = async (credentials: {
@@ -19,7 +16,7 @@ export const useAuth = () => {
     // 这里应该调用你的登录 API
     const res = await http.post('/auth/login', credentials);
 
-    const { token: tokenData, ...userData } = res;
+    const { token: tokenData } = res;
 
     // 保存令牌
     localStorage.setItem('remember_me', credentials.remember ? 'true' : 'false');
@@ -31,8 +28,7 @@ export const useAuth = () => {
 
     rememberMe.value = credentials.remember;
     token.value = tokenData;
-    user.value = userData;
-    return { success: true, user: userData };
+    return { success: true };
   };
 
   // 注册函数
@@ -71,10 +67,8 @@ export const useAuth = () => {
   };
 
   return {
-    user: readonly(user),
     token: readonly(token),
     rememberMe: readonly(rememberMe),
-    refreshUser,
     login,
     register,
     logout,

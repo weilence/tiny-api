@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
-const { user, logout } = useAuth();
+const { user } = useUser();
+const { logout } = useAuth();
 
 // 计算菜单项
 const userMenuItems = computed(() => {

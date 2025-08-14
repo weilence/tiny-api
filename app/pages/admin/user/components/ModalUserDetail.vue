@@ -56,7 +56,7 @@ const submitText = computed(() => (props.mode === 'create' ? '创建' : '更新'
 const schema = computed(() => (props.mode === 'create' ? createSchema : editSchema));
 
 // 当前登录用户
-const { user } = useAuth();
+const { user } = useUser();
 const isEditingSelf = computed(() => props.mode === 'edit' && user.value?.id === props.userData?.id);
 
 // 方法

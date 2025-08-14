@@ -10,8 +10,9 @@ export default defineEventHandler(async (event) => {
     throwPermissionError('您没有权限删除此分组');
   }
 
-  const group = await prisma.group.delete({
-    where: { id },
+  const group = await prisma.$transaction(async (tx) => {
+    await tx.groupUser.deleteMany({ where: { groupId: id } });
+    return await tx.group.delete({ where: { id } });
   });
   return group;
 });

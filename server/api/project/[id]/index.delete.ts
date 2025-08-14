@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
 
     await tx.endpoint.deleteMany({ where: { groupId: { in: groupIds } } });
     await tx.endpointGroup.deleteMany({ where: { projectId: id } });
+    await tx.projectUser.deleteMany({ where: { projectId: id } });
     await tx.project.delete({ where: { id } });
   });
 });

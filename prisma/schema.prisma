@@ -20,12 +20,13 @@ datasource db {
 }
 
 model Group {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   projects    Project[]
+  users       GroupUser[]
 }
 
 model GroupUser {
@@ -33,6 +34,8 @@ model GroupUser {
   userId  String
   // Use ProjectRole enum to unify roles across Group and Project (GUEST/DEVELOPER/ADMIN)
   role    ProjectRole @default(GUEST)
+  Group   Group       @relation(fields: [groupId], references: [id])
+  User    User        @relation(fields: [userId], references: [id])
 
   @@id([groupId, userId])
 }
@@ -47,12 +50,15 @@ model Project {
   updatedAt      DateTime        @updatedAt
   group          Group           @relation(fields: [groupId], references: [id])
   endpointGroups EndpointGroup[]
+  users          ProjectUser[]
 }
 
 model ProjectUser {
   projectId String
   userId    String
   role      ProjectRole @default(GUEST)
+  Project   Project     @relation(fields: [projectId], references: [id])
+  User      User        @relation(fields: [userId], references: [id])
 
   @@id([projectId, userId])
 }
@@ -100,15 +106,17 @@ model Endpoint {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  username    String    @unique
+  id          String        @id @default(cuid())
+  email       String        @unique
+  username    String        @unique
   password    String
   name        String?
-  role        Role      @default(MEMBER)
+  role        Role          @default(MEMBER)
   lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  projects    ProjectUser[]
+  groups      GroupUser[]
 }
 
 enum Role {

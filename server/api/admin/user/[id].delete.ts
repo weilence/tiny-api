@@ -31,8 +31,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await prisma.user.delete({
-    where: { id: targetUserId },
+  // 使用事务同时删除成员关系与用户
+  await prisma.$transaction(async (tx) => {
+    await tx.groupUser.deleteMany({ where: { userId: targetUserId } });
+    await tx.projectUser.deleteMany({ where: { userId: targetUserId } });
+    await tx.user.delete({ where: { id: targetUserId } });
   });
 
   return {
