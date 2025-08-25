@@ -4,16 +4,17 @@ import type { TreeItem } from '@nuxt/ui';
 
 const props = defineProps<{
   projectId: string;
+  items: TreeItem[];
+  loading?: boolean;
 }>();
 const emits = defineEmits<{
   (e: 'select', api: ProjectGetResEndpoint | null): void;
+  (e: 'reload'): void;
 }>();
-
-const endpoints = ref<TreeItem[]>([]);
 
 const searchQuery = ref('');
 const filteredEndpoints = computed(() => {
-  const v = endpoints.value as TreeItem[];
+  const v = (props.items || []) as TreeItem[];
   if (!searchQuery.value.trim()) {
     return v;
   }
@@ -77,33 +78,8 @@ const importApi = async () => {
     projectId: props.projectId,
   });
   if (await instance.result) {
-    await loadProject();
+  emits('reload');
   }
-};
-
-onMounted(async () => {
-  await loadProject();
-});
-
-const convertToTreeItem = (endpoint: ProjectGetResEndpointGroup): TreeItem => ({
-  ...endpoint,
-  isFolder: true,
-  value: endpoint.id,
-  label: endpoint.name,
-  children: endpoint.children.map(convertToTreeItem).concat(
-    endpoint.endpoints.map((e) => ({
-      ...e,
-      isFolder: false,
-      value: e.id,
-      label: e.name,
-    }))
-  ),
-});
-
-const loadProject = async () => {
-  const project = await http.get<ProjectGetRes>(`/project/${props.projectId}`);
-  const res = project?.endpointGroups.map(convertToTreeItem) ?? [];
-  endpoints.value = res;
 };
 </script>
 
@@ -191,7 +167,7 @@ const loadProject = async () => {
       </TreeVirtualizer>
     </TreeRoot>
 
-    <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
+  <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
         <UIcon name="i-heroicons-magnifying-glass" class="mx-auto h-8 w-8 mb-2" />
         <p class="text-sm text-dimmed">没有找到匹配的接口</p>
@@ -199,7 +175,7 @@ const loadProject = async () => {
       </div>
     </div>
 
-    <div v-else-if="endpoints.length === 0" class="flex items-center justify-center py-8">
+  <div v-else-if="!props.loading && (props.items?.length || 0) === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
         <UIcon name="i-heroicons-document-plus" class="mx-auto h-8 w-8 mb-2" />
         <p class="text-sm text-dimmed">暂无API接口</p>

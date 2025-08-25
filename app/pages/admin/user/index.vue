@@ -93,7 +93,7 @@ const loading = ref(false);
 const searchQuery = ref('');
 
 const toast = useToast();
-const { user: currentUser } = useAuth();
+const { user: currentUser } = useUser();
 const overlay = useOverlay();
 
 // 创建弹窗实例
