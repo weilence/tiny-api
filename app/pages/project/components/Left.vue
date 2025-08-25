@@ -78,7 +78,7 @@ const importApi = async () => {
     projectId: props.projectId,
   });
   if (await instance.result) {
-  emits('reload');
+    emits('reload');
   }
 };
 </script>
@@ -130,44 +130,30 @@ const importApi = async () => {
             :style="{ 'padding-left': `${item.level - 0.5}rem` }"
           >
             <template v-if="item.value.isFolder">
-              <template v-if="item.hasChildren">
-                <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4" />
-                <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4" />
+              <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4" />
+              <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4" />
+            </template>
+            <UBadge
+              v-else
+              :color="getColor(item.value.method)"
+              variant="solid"
+              size="sm"
+              class="w-12 flex justify-center"
+            >
+              {{ item.value.method.toUpperCase() || 'GET' }}
+            </UBadge>
+            <span :class="{ 'text-primary': isSelected }" class="truncate flex-1 min-w-0" :title="item.value.name">
+              <template v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)" :key="partIndex">
+                <mark v-if="part.highlight" class="rounded px-0.5">{{ part.text }}</mark>
+                <template v-else>{{ part.text }}</template>
               </template>
-              <span :class="{ 'text-primary': isSelected }" class="truncate flex-1 min-w-0" :title="item.value.name">
-                <template
-                  v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
-                  :key="partIndex"
-                >
-                  <mark v-if="part.highlight" class="text-warning rounded px-0.5">{{
-                    part.text
-                  }}</mark>
-                  <template v-else>{{ part.text }}</template>
-                </template>
-              </span>
-            </template>
-            <template v-else>
-              <UBadge :color="getColor(item.value.method)" variant="solid" size="sm" class="w-12 flex justify-center">
-                {{ item.value.method.toUpperCase() || 'GET' }}
-              </UBadge>
-              <span :class="{ 'text-primary': isSelected }" class="truncate flex-1 min-w-0" :title="item.value.name">
-                <template
-                  v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)"
-                  :key="partIndex"
-                >
-                  <mark v-if="part.highlight" class="bg-warning rounded px-0.5">{{
-                    part.text
-                  }}</mark>
-                  <template v-else>{{ part.text }}</template>
-                </template>
-              </span>
-            </template>
+            </span>
           </div>
         </TreeItem>
       </TreeVirtualizer>
     </TreeRoot>
 
-  <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
+    <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
         <UIcon name="i-heroicons-magnifying-glass" class="mx-auto h-8 w-8 mb-2" />
         <p class="text-sm text-dimmed">没有找到匹配的接口</p>
@@ -175,7 +161,7 @@ const importApi = async () => {
       </div>
     </div>
 
-  <div v-else-if="!props.loading && (props.items?.length || 0) === 0" class="flex items-center justify-center py-8">
+    <div v-else-if="!props.loading && (props.items?.length || 0) === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
         <UIcon name="i-heroicons-document-plus" class="mx-auto h-8 w-8 mb-2" />
         <p class="text-sm text-dimmed">暂无API接口</p>
