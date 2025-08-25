@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui';
 import { getPaginationRowModel } from '@tanstack/vue-table';
 import { UBadge, UButton, USelectMenu } from '#components';
 const props = defineProps<{
-  project: ProjectGetRes | null;
+  data: ProjectGetResEndpointGroup[];
   loading?: boolean;
 }>();
 const emit = defineEmits<{ select: [ProjectGetResEndpoint]; reload: [] }>();
@@ -34,14 +34,14 @@ function flattenProject(groups: ProjectGetResEndpointGroup[]) {
   const rows: TableModel[] = [];
   const groupItems: Array<{ label: string; value: string }> = [];
 
-  for (const group of groups) {
+  for (const group of groups || []) {
     const groupItem = {
       label: group.name,
       value: group.id,
     };
     groupItems.push(groupItem);
 
-    for (const ep of group.endpoints) {
+    for (const ep of group.endpoints || []) {
       rows.push({
         id: ep.id,
         name: ep.name,
@@ -63,10 +63,10 @@ function flattenProject(groups: ProjectGetResEndpointGroup[]) {
 }
 
 const tableInfo = computed(() => {
-  if (!props.project) {
+  if (!props.data) {
     return { rows: [], groupItems: [] };
   }
-  const ret = flattenProject(props.project.endpointGroups);
+  const ret = flattenProject(props.data);
   return { rows: ret.rows, groupItems: ret.groupItems };
 });
 const columns = ref<TableColumn<TableModel>[]>([

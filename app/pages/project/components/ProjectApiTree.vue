@@ -8,7 +8,7 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 const emits = defineEmits<{
-  (e: 'select', api: ProjectGetResEndpoint | null): void;
+  (e: 'select', api: TreeItem): void;
   (e: 'reload'): void;
 }>();
 
@@ -51,11 +51,7 @@ const filterEndpoints = (endpoints: TreeItem[], query: string): TreeItem[] => {
 };
 
 const selectApi = (v: TreeItem) => {
-  if (!v || v.isFolder) {
-    emits('select', null);
-  } else {
-    emits('select', v as ProjectGetResEndpoint);
-  }
+  emits('select', v);
 };
 
 // 高亮搜索关键词的辅助函数
