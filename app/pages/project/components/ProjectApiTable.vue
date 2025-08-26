@@ -1,9 +1,11 @@
 <script setup lang="tsx">
-import type { TableColumn } from '@nuxt/ui';
+import type { SelectMenuItem, TableColumn } from '@nuxt/ui';
 import { getPaginationRowModel } from '@tanstack/vue-table';
 import { UBadge, UButton, USelectMenu } from '#components';
+
 const props = defineProps<{
   data: ProjectGetResEndpointGroup[];
+  groupItems: SelectMenuItem[];
   loading?: boolean;
 }>();
 const emit = defineEmits<{ select: [ProjectGetResEndpoint]; reload: [] }>();
@@ -32,15 +34,8 @@ const openDetail = (m: TableModel) => {
 // Flatten project to table rows/options
 function flattenProject(groups: ProjectGetResEndpointGroup[]) {
   const rows: TableModel[] = [];
-  const groupItems: Array<{ label: string; value: string }> = [];
 
   for (const group of groups || []) {
-    const groupItem = {
-      label: group.name,
-      value: group.id,
-    };
-    groupItems.push(groupItem);
-
     for (const ep of group.endpoints || []) {
       rows.push({
         id: ep.id,
@@ -55,20 +50,16 @@ function flattenProject(groups: ProjectGetResEndpointGroup[]) {
     }
 
     const sub = flattenProject(group.children);
-    rows.push(...sub.rows);
-    groupItems.push(...sub.groupItems);
+    rows.push(...sub);
   }
 
-  return { rows, groupItems };
+  return rows;
 }
 
 const tableInfo = computed(() => {
-  if (!props.data) {
-    return { rows: [], groupItems: [] };
-  }
-  const ret = flattenProject(props.data);
-  return { rows: ret.rows, groupItems: ret.groupItems };
+  return flattenProject(props.data);
 });
+
 const columns = ref<TableColumn<TableModel>[]>([
   {
     id: 'name',
@@ -109,7 +100,7 @@ const columns = ref<TableColumn<TableModel>[]>([
         class="w-full"
         modelValue={row.original.groupId}
         onUpdate:modelValue={(e) => (row.original.groupId = e)}
-        items={tableInfo.value.groupItems}
+        items={props.groupItems}
         valueKey="value"
       />
     ),
@@ -165,7 +156,7 @@ const pagination = ref({
         ref="table"
         v-model:pagination="pagination"
         :loading="props.loading"
-        :data="tableInfo.rows"
+        :data="tableInfo"
         :columns="columns"
         class="flex-1"
         :pagination-options="{

@@ -6,7 +6,7 @@ import ProjectPreview from './components/ProjectPreview.vue';
 import ProjectEdit from './components/ProjectEdit.vue';
 import ProjectRun from './components/ProjectRun.vue';
 import ProjectMock from './components/ProjectMock.vue';
-import type { TreeItem } from '@nuxt/ui';
+import type { SelectMenuItem, TreeItem } from '@nuxt/ui';
 
 useHead({
   title: 'Project Detail',
@@ -15,17 +15,19 @@ useHead({
 const route = useRoute();
 const projectId = route.params.id as string;
 
-const treeItems = ref<TreeItem[]>([]);
 const loading = ref(true);
-
-const apiDetail = ref<ProjectGetResEndpoint | null>(null);
+const treeItems = ref<TreeItem[]>([]);
+const groupItems = ref<SelectMenuItem[]>([]);
 const apiList = ref<ProjectGetResEndpointGroup[]>([]);
+const apiDetail = ref<ProjectGetResEndpoint | null>(null);
 
 const loadProject = async () => {
   loading.value = true;
   try {
     const res = await http.get<ProjectGetRes>(`/project/${projectId}`);
-    treeItems.value = res.endpointGroups.map(convertToTreeItem);
+    const converted = convertToTreeItem(res.endpointGroups);
+    treeItems.value = converted.treeItems;
+    groupItems.value = converted.groupItems;
     apiList.value = res.endpointGroups;
     apiDetail.value = null;
   } finally {
@@ -36,20 +38,34 @@ const loadProject = async () => {
 onMounted(loadProject);
 
 // Helpers to transform data for Left tree
-const convertToTreeItem = (endpoint: ProjectGetResEndpointGroup): TreeItem => ({
-  ...endpoint,
-  isFolder: true,
-  value: endpoint.id,
-  label: endpoint.name,
-  children: endpoint.children.map(convertToTreeItem).concat(
-    endpoint.endpoints.map((e) => ({
-      ...e,
-      isFolder: false,
-      value: e.id,
-      label: e.name,
-    }))
-  ),
-});
+const convertToTreeItem = (groups: ProjectGetResEndpointGroup[]) => {
+  const treeItems: TreeItem[] = [];
+  const groupNames: SelectMenuItem[] = [];
+
+  for (const group of groups) {
+    const { treeItems: subTreeItems, groupItems: subGroupItems } = convertToTreeItem(group.children);
+
+    const treeItem: TreeItem = {
+      ...group,
+      isFolder: true,
+      value: group.id,
+      label: group.name,
+      children: subTreeItems.concat(
+        group.endpoints.map((endpoint) => ({
+          ...endpoint,
+          isFolder: false,
+          value: endpoint.id,
+          label: endpoint.name,
+        }))
+      ),
+    };
+
+    treeItems.push(treeItem);
+    groupNames.push({ label: group.name, value: group.id }, ...subGroupItems);
+  }
+
+  return { treeItems, groupItems: groupNames };
+};
 
 const selectedMain = ref('api');
 const mainTabs = [
@@ -172,7 +188,13 @@ const selectApi = (ep: TreeItem) => {
             </UTabs>
           </UCard>
           <div v-else class="min-w-0 flex-[2_1_66.67%]">
-            <ProjectApiTable :data="apiList" :loading="loading" @select="selectApi" @reload="loadProject" />
+            <ProjectApiTable
+              :data="apiList"
+              :group-items="groupItems"
+              :loading="loading"
+              @select="selectApi"
+              @reload="loadProject"
+            />
           </div>
         </div>
       </template>
