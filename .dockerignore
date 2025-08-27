@@ -1,7 +1,6 @@
 .git
 .nuxt
 .output
-.prisma
 node_modules
 .gitignore
 .env*

@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq, and } from 'drizzle-orm';
+import { groupUsers } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id: groupId, userId } = await useValidatedParams(
@@ -28,10 +30,12 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ role: MemberRole }>(event);
   if (!body?.role) throw createError({ statusCode: 400, message: 'role is required' });
 
-  await prisma.groupUser.update({
-    where: { groupId_userId: { groupId, userId } },
-    data: { role: body.role as any },
-  });
+  await db
+    .update(groupUsers)
+    .set({
+      role: body.role as any,
+    })
+    .where(and(eq(groupUsers.groupId, groupId), eq(groupUsers.userId, userId)));
 
   return { success: true };
 });

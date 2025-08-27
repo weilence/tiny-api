@@ -1,3 +1,6 @@
+import { eq } from 'drizzle-orm';
+import { projects } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const groupId = getQuery(event).groupId as string;
   const userId = event.context.auth.user;
@@ -15,9 +18,9 @@ export default defineEventHandler(async (event) => {
     throwPermissionError('您没有权限查看此分组下的项目');
   }
 
-  const projects: ProjectQueryRes[] = await prisma.project.findMany({
-    where: { groupId: groupId },
-    select: {
+  const projectsResult: ProjectQueryRes[] = await db.query.projects.findMany({
+    where: eq(projects.groupId, groupId),
+    columns: {
       id: true,
       name: true,
       description: true,
@@ -28,5 +31,5 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  return projects;
+  return projectsResult;
 });

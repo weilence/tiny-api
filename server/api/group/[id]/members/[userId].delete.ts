@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq, and } from 'drizzle-orm';
+import { groupUsers } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id: groupId, userId } = await useValidatedParams(
@@ -25,6 +27,6 @@ export default defineEventHandler(async (event) => {
     throwPermissionError('您没有权限管理此分组的成员');
   }
 
-  await prisma.groupUser.delete({ where: { groupId_userId: { groupId, userId } } });
+  await db.delete(groupUsers).where(and(eq(groupUsers.groupId, groupId), eq(groupUsers.userId, userId)));
   return { success: true };
 });

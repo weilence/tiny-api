@@ -1,17 +1,14 @@
+import { ilike, or, desc } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const { q } = getQuery(event) as { q?: string };
 
-  const users: AdminUserListRes[] = await prisma.user.findMany({
+  const usersResult: AdminUserListRes[] = await db.query.users.findMany({
     where: q
-      ? {
-          OR: [
-            { username: { contains: q, mode: 'insensitive' } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { name: { contains: q, mode: 'insensitive' } },
-          ],
-        }
+      ? or(ilike(users.username, `%${q}%`), ilike(users.email, `%${q}%`), ilike(users.name, `%${q}%`))
       : undefined,
-    select: {
+    columns: {
       id: true,
       email: true,
       username: true,
@@ -21,10 +18,8 @@ export default defineEventHandler(async (event) => {
       createdAt: true,
       updatedAt: true,
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: desc(users.createdAt),
   });
 
-  return users;
+  return usersResult;
 });

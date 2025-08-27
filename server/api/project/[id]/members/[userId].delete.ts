@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq, and } from 'drizzle-orm';
+import { projectUsers } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id: projectId, userId } = await useValidatedParams(
@@ -26,6 +28,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // Only allow deleting local members; inherited members cannot be removed here.
-  await prisma.projectUser.delete({ where: { projectId_userId: { projectId, userId } } });
+  await db.delete(projectUsers).where(and(eq(projectUsers.projectId, projectId), eq(projectUsers.userId, userId)));
   return { success: true };
 });

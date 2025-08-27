@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq } from 'drizzle-orm';
+import { projects } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id } = await useValidatedParams(event, v.object({ id: v.string() }));
@@ -11,9 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<ProjectUpdateReq>(event);
-  const project = await prisma.project.update({
-    where: { id },
-    data: body,
-  });
+  const [project] = await db.update(projects).set(body).where(eq(projects.id, id)).returning();
   return project;
 });

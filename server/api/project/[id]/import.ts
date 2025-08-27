@@ -2,7 +2,8 @@
 import SwaggerClient from 'swagger-client';
 import { useValidatedParams, v } from 'h3-valibot';
 import type { OpenAPI, OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-import { DbNull } from '~~/.prisma/internal/prismaNamespace';
+import { eq, inArray } from 'drizzle-orm';
+import { endpointGroups, endpoints } from '~~/server/db/schema';
 
 export async function parseMultipartObject<T>(event: any) {
   const parts = await readMultipartFormData(event);
@@ -93,56 +94,44 @@ export default defineEventHandler(async (event) => {
     g.get(groupKey)!.push(m);
   }
 
-  await prisma.$transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     const groupIds = (
-      await tx.endpointGroup.findMany({
-        where: {
-          projectId: projectId,
-        },
-        select: {
+      await tx.query.endpointGroups.findMany({
+        where: eq(endpointGroups.projectId, projectId),
+        columns: {
           id: true,
         },
       })
     ).map((p) => p.id);
 
-    await tx.endpoint.deleteMany({
-      where: {
-        groupId: {
-          in: groupIds,
-        },
-      },
-    });
+    await tx.delete(endpoints).where(inArray(endpoints.groupId, groupIds));
 
-    await tx.endpointGroup.deleteMany({
-      where: {
-        id: {
-          in: groupIds,
-        },
-      },
-    });
+    await tx.delete(endpointGroups).where(inArray(endpointGroups.id, groupIds));
 
-    const groupCreateReturns = await tx.endpointGroup.createManyAndReturn({
-      data: Array.from(g.keys()).map((key) => ({
-        name: key,
-        projectId: projectId,
-      })),
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+    const groupCreateReturns = await tx
+      .insert(endpointGroups)
+      .values(
+        Array.from(g.keys()).map((key) => ({
+          name: key,
+          projectId: projectId,
+        }))
+      )
+      .returning({
+        id: endpointGroups.id,
+        name: endpointGroups.name,
+      });
 
-    await tx.endpoint.createMany({
-      data: groupCreateReturns.flatMap((group) => {
+    await tx.insert(endpoints).values(
+      groupCreateReturns.flatMap((group) => {
         return g.get(group.name)!.map((endpoint) => ({
           ...endpoint,
           headers: endpoint.headers,
           queryParams: endpoint.queryParams,
-          body: endpoint.body || DbNull,
+          body: endpoint.body || null,
           groupId: group.id,
         }));
-      }),
-    });
+      })
+    );
   });
 });
 
@@ -157,10 +146,10 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
     for (const [method, v] of Object.entries(methods!)) {
       if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
       const operation = v as Schema<OpenAPIV3.OperationObject>;
-      const headers: PrismaJson.Parameter[] = [];
-      const queryParams: PrismaJson.Parameter[] = [];
+      const headers: Parameter[] = [];
+      const queryParams: Parameter[] = [];
       for (const parameter of operation.parameters || []) {
-        const p = {} as PrismaJson.Parameter;
+        const p = {} as Parameter;
         p.key = parameter.name;
         p.value = '';
         p.description = parameter.description || '';
@@ -180,7 +169,7 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
         }
       }
 
-      let body: PrismaJson.Parameter | null = null;
+      let body: Parameter | null = null;
       if (operation.requestBody) {
         const schema = operation.requestBody.content?.['application/json']?.schema;
         if (schema) {
@@ -189,7 +178,7 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
       }
 
       const endpoint = {
-        method: method as PrismaJson.HttpMethod,
+        method: method as HttpMethod,
         path: path,
         tags: operation.tags || [],
         name: operation.summary || '',
@@ -206,14 +195,14 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
 }
 
 interface SpecEndpoint {
-  method: PrismaJson.HttpMethod;
+  method: HttpMethod;
   path: string;
   tags: string[];
   name: string;
   description: string;
-  headers: PrismaJson.Parameter[];
-  queryParams: PrismaJson.Parameter[];
-  body: PrismaJson.Parameter | null;
+  headers: Parameter[];
+  queryParams: Parameter[];
+  body: Parameter | null;
 }
 
 function handleSwaggerSpec(spec: OpenAPIV2.Document) {
@@ -224,10 +213,10 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
       if (!['get', 'post', 'put', 'delete'].includes(method)) continue;
 
       const op = operation as Schema<OpenAPIV2.OperationObject>;
-      const headers: PrismaJson.Parameter[] = [];
-      const queryParams: PrismaJson.Parameter[] = [];
-      const formDataParams: PrismaJson.Parameter[] = [];
-      let body: PrismaJson.Parameter | null = null;
+      const headers: Parameter[] = [];
+      const queryParams: Parameter[] = [];
+      const formDataParams: Parameter[] = [];
+      let body: Parameter | null = null;
 
       // 处理参数
       for (const param of op.parameters || []) {
@@ -237,7 +226,7 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
           }
         } else {
           const generalParam = param as Schema<OpenAPIV2.GeneralParameterObject>;
-          const p: PrismaJson.Parameter = {
+          const p: Parameter = {
             key: generalParam.name,
             value: '',
             type: generalParam.type || 'string',
@@ -282,7 +271,7 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
       }
 
       const endpoint = {
-        method: method as PrismaJson.HttpMethod,
+        method: method as HttpMethod,
         path: path,
         tags: op.tags || [],
         name: op.summary || '',
@@ -299,9 +288,9 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
 }
 
 // 用于处理Swagger 2.0的schema转换
-function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): PrismaJson.Parameter {
+function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): Parameter {
   if (schema.type === 'object') {
-    const children: PrismaJson.Parameter[] = [];
+    const children: Parameter[] = [];
     for (const [key, subSchema] of Object.entries(schema.properties || {})) {
       const subParameter = convertSwaggerSchemaToParameter(subSchema);
       subParameter.key = key;
@@ -337,9 +326,9 @@ function convertSwaggerSchemaToParameter(schema: OpenAPIV2.SchemaObject): Prisma
   }
 }
 
-function convertSchemaToParameter(schema: Schema<OpenAPIV3.SchemaObject>): PrismaJson.Parameter {
+function convertSchemaToParameter(schema: Schema<OpenAPIV3.SchemaObject>): Parameter {
   if (schema.type === 'object') {
-    const children: PrismaJson.Parameter[] = [];
+    const children: Parameter[] = [];
     for (const [key, subSchema] of Object.entries(schema.properties || {})) {
       const subParameter = convertSchemaToParameter(subSchema);
       subParameter.key = key;

@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq } from 'drizzle-orm';
+import { projects } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id } = await useValidatedParams(event, v.object({ id: v.string() }));
@@ -10,21 +12,19 @@ export default defineEventHandler(async (event) => {
     throwPermissionError('您没有权限访问此项目');
   }
 
-  const project = await prisma.project.findUnique({
-    where: {
-      id: id,
-    },
-    include: {
-      endpointGroups: {
-        include: {
-          endpoints: true,
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.id, id),
+    with: {
+      endpointGroup: {
+        with: {
+          endpoint: true,
         },
       },
     },
   });
 
   const egm = new Map<string, ProjectGetResEndpointGroup>();
-  for (const eg of project?.endpointGroups || []) {
+  for (const eg of project?.endpointGroup || []) {
     egm.set(eg.id, {
       id: eg.id,
       name: eg.name,
@@ -33,15 +33,15 @@ export default defineEventHandler(async (event) => {
       updatedAt: eg.updatedAt,
       children: [],
       parentId: eg.parentId || null,
-      endpoints: eg.endpoints.map((endpoint) => ({
+      endpoints: eg.endpoint.map((endpoint) => ({
         id: endpoint.id,
         name: endpoint.name,
         method: endpoint.method,
         path: endpoint.path,
         description: endpoint.description,
-        tags: endpoint.tags,
-        headers: endpoint.headers,
-        queryParams: endpoint.queryParams,
+        tags: endpoint.tags || [],
+        headers: endpoint.headers || [],
+        queryParams: endpoint.queryParams || [],
         body: endpoint.body,
         response: endpoint.response,
         createdAt: endpoint.createdAt,

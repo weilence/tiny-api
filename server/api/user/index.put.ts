@@ -1,10 +1,11 @@
+import { eq } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const userId = event.context.auth.user;
   const req = await readBody<UserUpdateReq>(event);
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
   });
   if (!user) {
     throw createError({
@@ -13,14 +14,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
+  await db
+    .update(users)
+    .set({
       username: req.username,
       email: req.email,
       name: req.name,
-    },
-  });
+    })
+    .where(eq(users.id, userId));
 });

@@ -20,17 +20,37 @@ interface ProjectGetResEndpointGroup {
   updatedAt: Date;
 }
 
+interface EndpointResponse {
+  status: number;
+  headers: Record<string, string>;
+  body: string;
+}
+
+interface Parameter {
+  key: string;
+  value: string;
+  type: string;
+  isArray: boolean;
+  required: boolean;
+  description: string;
+  enabled: boolean;
+  children?: Parameter[];
+  options?: string[];
+}
+
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+
 interface ProjectGetResEndpoint {
   id: string;
   name: string;
-  method: PrismaJson.HttpMethod;
+  method: HttpMethod;
   path: string;
   description: string;
   tags: string[];
-  headers: PrismaJson.Parameter[];
-  queryParams: PrismaJson.Parameter[];
-  body: PrismaJson.Parameter | null;
-  response: PrismaJson.EndpointResponse | null;
+  headers: Parameter[];
+  queryParams: Parameter[];
+  body: Parameter | null;
+  response: EndpointResponse | null;
   createdAt: Date;
   updatedAt: Date;
 }

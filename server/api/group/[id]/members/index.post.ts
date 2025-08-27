@@ -1,4 +1,5 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { groupUsers } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id: groupId } = await useValidatedParams(
@@ -19,11 +20,17 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ userId: string; role: MemberRole }>(event);
   if (!body?.userId || !body?.role) throw createError({ statusCode: 400, message: 'userId and role are required' });
 
-  await prisma.groupUser.upsert({
-    where: { groupId_userId: { groupId, userId: body.userId } },
-    create: { groupId, userId: body.userId, role: body.role as any },
-    update: { role: body.role as any },
-  });
+  await db
+    .insert(groupUsers)
+    .values({
+      groupId,
+      userId: body.userId,
+      role: body.role as any,
+    })
+    .onConflictDoUpdate({
+      target: [groupUsers.groupId, groupUsers.userId],
+      set: { role: body.role as any },
+    });
 
   return { success: true };
 });

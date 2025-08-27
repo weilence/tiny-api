@@ -1,3 +1,5 @@
+import { settings } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<AdminSettingUpsertReq>(event);
 
@@ -13,11 +15,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'ldap 必须为对象' });
   }
 
-  const row = await prisma.setting.upsert({
-    where: { key: body.key },
-    update: { value: body.value },
-    create: { key: body.key, value: body.value },
-  });
+  const [row] = await db
+    .insert(settings)
+    .values({
+      key: body.key,
+      value: body.value,
+    })
+    .onConflictDoUpdate({
+      target: settings.key,
+      set: { value: body.value },
+    })
+    .returning();
 
-  return row as unknown as AdminSettingUpsertRes;
+  return row as AdminSettingUpsertRes;
 });

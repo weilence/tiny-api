@@ -1,3 +1,6 @@
+import { eq } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 // 需要排除的路径（不需要认证的接口）
 const excludedPaths = [
   '/api/auth/login',
@@ -46,9 +49,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // 获取完整的用户信息
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
       id: true,
       username: true,
       email: true,

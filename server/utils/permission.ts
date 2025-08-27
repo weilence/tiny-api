@@ -1,4 +1,5 @@
-import prisma from './prisma';
+import { eq, and } from 'drizzle-orm';
+import { groupUsers, projectUsers, projects } from '~~/server/db/schema';
 
 export type MemberRole = 'GUEST' | 'DEVELOPER' | 'ADMIN';
 
@@ -13,13 +14,8 @@ const ROLE_WEIGHTS: Record<MemberRole, number> = {
  * 检查用户是否是Group成员
  */
 export async function checkGroupMember(userId: string, groupId: string): Promise<boolean> {
-  const member = await prisma.groupUser.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId,
-      },
-    },
+  const member = await db.query.groupUsers.findFirst({
+    where: and(eq(groupUsers.groupId, groupId), eq(groupUsers.userId, userId)),
   });
   return !!member;
 }
@@ -28,14 +24,9 @@ export async function checkGroupMember(userId: string, groupId: string): Promise
  * 获取用户在Group中的角色
  */
 export async function getGroupRole(userId: string, groupId: string): Promise<MemberRole | null> {
-  const member = await prisma.groupUser.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId,
-      },
-    },
-    select: {
+  const member = await db.query.groupUsers.findFirst({
+    where: and(eq(groupUsers.groupId, groupId), eq(groupUsers.userId, userId)),
+    columns: {
       role: true,
     },
   });
@@ -57,14 +48,9 @@ export async function checkGroupPermission(userId: string, groupId: string, minR
  */
 export async function getProjectRole(userId: string, projectId: string): Promise<MemberRole | null> {
   // 首先检查Project直接成员
-  const projectMember = await prisma.projectUser.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId,
-      },
-    },
-    select: {
+  const projectMember = await db.query.projectUsers.findFirst({
+    where: and(eq(projectUsers.projectId, projectId), eq(projectUsers.userId, userId)),
+    columns: {
       role: true,
     },
   });
@@ -74,9 +60,9 @@ export async function getProjectRole(userId: string, projectId: string): Promise
   }
 
   // 如果不是Project直接成员，检查Group继承权限
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    select: { groupId: true },
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.id, projectId),
+    columns: { groupId: true },
   });
 
   if (!project) return null;
@@ -98,9 +84,9 @@ export async function checkProjectPermission(userId: string, projectId: string, 
  * 获取用户有权限的Group ID列表
  */
 export async function getUserGroupIds(userId: string): Promise<string[]> {
-  const groups = await prisma.groupUser.findMany({
-    where: { userId },
-    select: { groupId: true },
+  const groups = await db.query.groupUsers.findMany({
+    where: eq(groupUsers.userId, userId),
+    columns: { groupId: true },
   });
   return groups.map((g) => g.groupId);
 }

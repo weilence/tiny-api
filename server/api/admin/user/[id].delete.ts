@@ -1,4 +1,6 @@
+import { eq } from 'drizzle-orm';
 import { useValidatedParams, v } from 'h3-valibot';
+import { groupUsers, projectUsers, users } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const currentUserId = event.context.auth.user;
@@ -12,8 +14,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // 检查目标用户是否存在
-  const targetUser = await prisma.user.findUnique({
-    where: { id: targetUserId },
+  const targetUser = await db.query.users.findFirst({
+    where: eq(users.id, targetUserId),
   });
 
   if (!targetUser) {
@@ -32,10 +34,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // 使用事务同时删除成员关系与用户
-  await prisma.$transaction(async (tx) => {
-    await tx.groupUser.deleteMany({ where: { userId: targetUserId } });
-    await tx.projectUser.deleteMany({ where: { userId: targetUserId } });
-    await tx.user.delete({ where: { id: targetUserId } });
+  await db.transaction(async (tx) => {
+    await tx.delete(groupUsers).where(eq(groupUsers.userId, targetUserId));
+    await tx.delete(projectUsers).where(eq(projectUsers.userId, targetUserId));
+    await tx.delete(users).where(eq(users.id, targetUserId));
   });
 
   return {

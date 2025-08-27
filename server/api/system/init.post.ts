@@ -1,6 +1,9 @@
+import { count } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   // 检查系统是否已经初始化
-  const userCount = await prisma.user.count();
+  const [{ userCount }] = await db.select({ userCount: count() }).from(users);
   if (userCount > 0) {
     throw createError({
       statusCode: 400,
@@ -39,14 +42,12 @@ export default defineEventHandler(async (event) => {
     const hashedPassword = await hashPassword(req.password);
 
     // 创建管理员用户
-    await prisma.user.create({
-      data: {
-        username: req.username,
-        email: req.email,
-        password: hashedPassword,
-        name: req.name || req.username,
-        role: 'ADMIN', // 默认角色为管理员
-      },
+    await db.insert(users).values({
+      username: req.username,
+      email: req.email,
+      password: hashedPassword,
+      name: req.name || req.username,
+      role: 'ADMIN', // 默认角色为管理员
     });
 
     return {

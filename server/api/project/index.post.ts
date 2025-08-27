@@ -1,3 +1,5 @@
+import { projects, projectUsers } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<ProjectCreateReq>(event);
   const userId = event.context.auth.user;
@@ -8,21 +10,20 @@ export default defineEventHandler(async (event) => {
     throwPermissionError('您没有权限在此分组中创建项目');
   }
 
-  const project = await prisma.$transaction(async (tx) => {
-    const p = await tx.project.create({
-      data: {
+  const project = await db.transaction(async (tx) => {
+    const [p] = await tx
+      .insert(projects)
+      .values({
         name: body.name,
         description: body.description,
         icon: body.icon,
         groupId: body.groupId,
-      },
-    });
-    await tx.projectUser.create({
-      data: {
-        projectId: p.id,
-        userId,
-        role: 'ADMIN' as any,
-      },
+      })
+      .returning();
+    await tx.insert(projectUsers).values({
+      projectId: p.id,
+      userId,
+      role: 'ADMIN',
     });
     return p;
   });

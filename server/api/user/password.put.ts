@@ -1,10 +1,11 @@
+import { eq } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const userId = event.context.auth.user;
   const req = await readBody<UserUpdatePasswordReq>(event);
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
   });
   if (!user) {
     throw createError({
@@ -21,14 +22,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const newPasswordHash = await hashPassword(req.newPassword);
-  await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
+  await db
+    .update(users)
+    .set({
       password: newPasswordHash,
-    },
-  });
+    })
+    .where(eq(users.id, userId));
 
   return {
     success: true,

@@ -1,4 +1,6 @@
+import { eq } from 'drizzle-orm';
 import { useValidatedParams, v } from 'h3-valibot';
+import { users } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id: targetUserId } = await useValidatedParams(event, v.object({ id: v.string() }));
@@ -22,8 +24,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // 检查目标用户是否存在
-  const targetUser = await prisma.user.findUnique({
-    where: { id: targetUserId },
+  const targetUser = await db.query.users.findFirst({
+    where: eq(users.id, targetUserId),
   });
 
   if (!targetUser) {
@@ -35,8 +37,8 @@ export default defineEventHandler(async (event) => {
 
   // 如果更新邮箱，检查是否已被其他用户使用
   if (body.email && body.email !== targetUser.email) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: body.email },
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, body.email),
     });
 
     if (existingUser) {
@@ -49,8 +51,8 @@ export default defineEventHandler(async (event) => {
 
   // 如果更新用户名，检查是否已被其他用户使用
   if (body.username && body.username !== targetUser.username) {
-    const existingUser = await prisma.user.findUnique({
-      where: { username: body.username },
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.username, body.username),
     });
 
     if (existingUser) {
@@ -73,18 +75,14 @@ export default defineEventHandler(async (event) => {
     updateData.password = await hashPassword(body.password);
   }
 
-  const updatedUser = await prisma.user.update({
-    where: { id: targetUserId },
-    data: updateData,
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+  const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, targetUserId)).returning({
+    id: users.id,
+    email: users.email,
+    username: users.username,
+    name: users.name,
+    role: users.role,
+    createdAt: users.createdAt,
+    updatedAt: users.updatedAt,
   });
 
   return updatedUser;

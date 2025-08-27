@@ -1,4 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
+import { eq } from 'drizzle-orm';
+import { groups } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id } = await useValidatedParams(event, v.object({ id: v.string() }));
@@ -11,9 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<GroupUpdateReq>(event);
-  const group = await prisma.group.update({
-    where: { id },
-    data: body,
-  });
+  const [group] = await db.update(groups).set(body).where(eq(groups.id, id)).returning();
   return group;
 });

@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
+import { eq, or } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const req = await readBody<UserLoginReq>(event);
@@ -19,8 +21,10 @@ export default defineEventHandler(async (event) => {
     // 2) 在本地查找或创建用户（不修改数据模型）
     const username = profile.username || req.credential;
     // 优先用邮箱匹配，否则用户名
-    let user = await prisma.user.findFirst({
-      where: profile.email ? { OR: [{ email: profile.email }, { username }] } : { username },
+    let user = await db.query.users.findFirst({
+      where: profile.email
+        ? or(eq(users.email, profile.email), eq(users.username, username))
+        : eq(users.username, username),
     });
 
     if (!user) {
@@ -34,32 +38,42 @@ export default defineEventHandler(async (event) => {
           .filter(Boolean)
           .join('.')}`;
 
-      user = await prisma.user.create({
-        data: {
+      const [newUser] = await db
+        .insert(users)
+        .values({
           email: email,
           username,
           password: await hashPassword(placeholder),
           name: profile.name || profile.username,
           // 角色默认 MEMBER（与 schema 默认一致）
-        },
-      });
+        })
+        .returning();
+      user = newUser;
     } else {
       // 同步资料
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
           name: profile.name ?? user.name,
           email: profile.email ?? user.email,
           lastLoginAt: new Date(),
-        },
-      });
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+      user = updatedUser;
     }
 
     // 更新最后登录时间（若上面未更新）
     if (!user.lastLoginAt) {
-      user = await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          lastLoginAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+      user = updatedUser;
     }
-
     const token = uuidv4().replace(/-/g, '').toLowerCase();
     await redis.setUserSession(token, user.id, 3600);
 
@@ -78,8 +92,8 @@ export default defineEventHandler(async (event) => {
 
   // local 登录：与原逻辑一致
   const isEmail = req.credential.includes('@');
-  const user = await prisma.user.findUnique({
-    where: isEmail ? { email: req.credential } : { username: req.credential },
+  const user = await db.query.users.findFirst({
+    where: isEmail ? eq(users.email, req.credential) : eq(users.username, req.credential),
   });
 
   if (!user) {
@@ -90,7 +104,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: '密码错误' });
   }
 
-  const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      lastLoginAt: new Date(),
+    })
+    .where(eq(users.id, user.id))
+    .returning();
   const token = uuidv4().replace(/-/g, '').toLowerCase();
   await redis.setUserSession(token, user.id, 3600);
 

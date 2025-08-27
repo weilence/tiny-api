@@ -1,9 +1,12 @@
+import { eq } from 'drizzle-orm';
+import { users } from '~~/server/db/schema';
+
 export default defineEventHandler(async (event) => {
   const body = await readBody<AdminUserCreateReq>(event);
 
   // 检查邮箱是否已存在
-  const existingUserByEmail = await prisma.user.findUnique({
-    where: { email: body.email },
+  const existingUserByEmail = await db.query.users.findFirst({
+    where: eq(users.email, body.email),
   });
 
   if (existingUserByEmail) {
@@ -14,8 +17,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // 检查用户名是否已存在
-  const existingUserByUsername = await prisma.user.findUnique({
-    where: { username: body.username },
+  const existingUserByUsername = await db.query.users.findFirst({
+    where: eq(users.username, body.username),
   });
 
   if (existingUserByUsername) {
@@ -28,24 +31,24 @@ export default defineEventHandler(async (event) => {
   // 创建新用户
   const hashedPassword = await hashPassword(body.password);
 
-  const newUser = await prisma.user.create({
-    data: {
+  const [newUser] = await db
+    .insert(users)
+    .values({
       email: body.email,
       username: body.username,
       password: hashedPassword,
       name: body.name,
       role: body.role,
-    },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+    })
+    .returning({
+      id: users.id,
+      email: users.email,
+      username: users.username,
+      name: users.name,
+      role: users.role,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    });
 
   return newUser;
 });

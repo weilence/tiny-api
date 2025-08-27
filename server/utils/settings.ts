@@ -1,3 +1,6 @@
+import { eq } from 'drizzle-orm';
+import { settings } from '~~/server/db/schema';
+
 const DEFAULT_LDAP = {
   enabled: false,
   url: '',
@@ -12,7 +15,9 @@ const DEFAULT_LDAP = {
 };
 
 export async function getAllowRegister(): Promise<boolean> {
-  const setting = await prisma.setting.findUnique({ where: { key: 'allowRegister' } });
+  const setting = await db.query.settings.findFirst({
+    where: eq(settings.key, 'allowRegister'),
+  });
   if (setting && typeof setting.value === 'boolean') {
     return setting.value as boolean;
   }
@@ -20,7 +25,9 @@ export async function getAllowRegister(): Promise<boolean> {
 }
 
 export async function getLdapConfig(): Promise<typeof DEFAULT_LDAP> {
-  const setting = await prisma.setting.findUnique({ where: { key: 'ldap' } });
+  const setting = await db.query.settings.findFirst({
+    where: eq(settings.key, 'ldap'),
+  });
   if (setting && typeof setting.value === 'object' && setting.value) {
     return { ...DEFAULT_LDAP, ...(setting.value as object) } as any;
   }
