@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  data: ProjectGetResEndpoint;
+  data: ProjectEndpointGetRes;
 }>();
 </script>
 

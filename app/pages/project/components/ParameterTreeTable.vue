@@ -2,7 +2,7 @@
 import ParameterRow from './ParameterRow.vue';
 
 interface Props {
-  parameters: PrismaJson.Parameter | PrismaJson.Parameter[];
+  parameters: Parameter | Parameter[];
 }
 
 const props = defineProps<Props>();
@@ -16,7 +16,7 @@ const parameterList = computed(() => {
 });
 
 // Function to generate unique node ID
-const getNodeId = (param: PrismaJson.Parameter, parentPath: string = '') => {
+const getNodeId = (param: Parameter, parentPath: string = '') => {
   return parentPath ? `${parentPath}.${param.key}` : param.key;
 };
 </script>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  parameter: PrismaJson.Parameter;
+  parameter: Parameter;
   level?: number;
   parentPath?: string;
 }
@@ -11,12 +11,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // Function to generate unique node ID
-const getNodeId = (param: PrismaJson.Parameter, parentPath: string = '') => {
+const getNodeId = (param: Parameter, parentPath: string = '') => {
   return parentPath ? `${parentPath}.${param.key}` : param.key;
 };
 
 // Function to get type display text
-const getTypeDisplay = (param: PrismaJson.Parameter) => {
+const getTypeDisplay = (param: Parameter) => {
   let typeText = param.type;
   if (param.isArray) {
     typeText += '[]';
@@ -58,7 +58,7 @@ onMounted(() => {
     expandedNodes.value.add(nodeId);
 
     // Recursively expand all children
-    const expandAllChildren = (param: PrismaJson.Parameter, parentPath: string = '') => {
+    const expandAllChildren = (param: Parameter, parentPath: string = '') => {
       if (param.children) {
         param.children.forEach((child) => {
           const childNodeId = getNodeId(child, parentPath ? `${parentPath}.${param.key}` : param.key);

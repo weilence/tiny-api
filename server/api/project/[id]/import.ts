@@ -178,7 +178,7 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
       }
 
       const endpoint = {
-        method: method as HttpMethod,
+        method: method.toUpperCase() as HttpMethod,
         path: path,
         tags: operation.tags || [],
         name: operation.summary || '',
@@ -271,7 +271,7 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
       }
 
       const endpoint = {
-        method: method as HttpMethod,
+        method: method.toUpperCase() as HttpMethod,
         path: path,
         tags: op.tags || [],
         name: op.summary || '',

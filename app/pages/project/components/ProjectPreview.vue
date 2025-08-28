@@ -2,7 +2,7 @@
 import ParameterTreeTable from './ParameterTreeTable.vue';
 
 defineProps<{
-  data: ProjectGetResEndpoint;
+  data: ProjectEndpointGetRes;
 }>();
 </script>
 

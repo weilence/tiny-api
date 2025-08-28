@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const model = defineModel<ProjectGetResEndpoint>({ required: true });
+const model = defineModel<ProjectEndpointGetRes>({ required: true });
 
 const toast = useToast();
 const addHeader = () => {

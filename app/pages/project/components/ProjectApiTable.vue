@@ -1,25 +1,14 @@
 <script setup lang="tsx">
-import type { SelectMenuItem, TableColumn } from '@nuxt/ui';
+import type { TableColumn } from '@nuxt/ui';
 import { getPaginationRowModel } from '@tanstack/vue-table';
 import { UBadge, UButton, USelectMenu } from '#components';
 
 const props = defineProps<{
-  data: ProjectGetResEndpointGroup[];
-  groupItems: SelectMenuItem[];
+  data: ProjectApiListGetRes[];
+  groupItems: Array<{ id: string; name: string }>;
   loading?: boolean;
 }>();
-const emit = defineEmits<{ select: [ProjectGetResEndpoint]; reload: [] }>();
-
-type TableModel = {
-  id: string;
-  name: string;
-  method: PrismaJson.HttpMethod;
-  path: string;
-  groupId: string;
-  tags: string[];
-  status: string;
-  endpoint: ProjectGetResEndpoint;
-};
+const emit = defineEmits<{ select: [ProjectApiListGetRes] }>();
 
 const statusOptions = [
   { label: '未完成', value: 'pending' },
@@ -27,40 +16,11 @@ const statusOptions = [
 ];
 
 // 点击名称，查看详情
-const openDetail = (m: TableModel) => {
-  emit('select', m.endpoint);
+const openDetail = (m: ProjectApiListGetRes) => {
+  emit('select', m);
 };
 
-// Flatten project to table rows/options
-function flattenProject(groups: ProjectGetResEndpointGroup[]) {
-  const rows: TableModel[] = [];
-
-  for (const group of groups || []) {
-    for (const ep of group.endpoints || []) {
-      rows.push({
-        id: ep.id,
-        name: ep.name,
-        method: ep.method,
-        path: ep.path,
-        groupId: group.id,
-        tags: ep.tags,
-        status: 'pending',
-        endpoint: ep,
-      });
-    }
-
-    const sub = flattenProject(group.children);
-    rows.push(...sub);
-  }
-
-  return rows;
-}
-
-const tableInfo = computed(() => {
-  return flattenProject(props.data);
-});
-
-const columns = ref<TableColumn<TableModel>[]>([
+const columns = ref<TableColumn<ProjectApiListGetRes>[]>([
   {
     id: 'name',
     header: '接口名称',
@@ -79,11 +39,11 @@ const columns = ref<TableColumn<TableModel>[]>([
     cell: ({ row }) => (
       <div class="gap-2 flex items-center">
         <UBadge
-          color={getColor(row.original.method)}
+          color={getColor(row.original.method || 'GET')}
           variant="solid"
           size="sm"
           class="w-12 justify-center"
-          label={row.original.method.toUpperCase()}
+          label={row.original.method?.toUpperCase()}
         />
         <span class="text-info">{row.original.path}</span>
       </div>
@@ -98,10 +58,11 @@ const columns = ref<TableColumn<TableModel>[]>([
     cell: ({ row }) => (
       <USelectMenu
         class="w-full"
-        modelValue={row.original.groupId}
+        modelValue={row.original.groupId || ''}
         onUpdate:modelValue={(e) => (row.original.groupId = e)}
         items={props.groupItems}
-        valueKey="value"
+        labelKey="name"
+        valueKey="id"
       />
     ),
   },
@@ -111,22 +72,14 @@ const columns = ref<TableColumn<TableModel>[]>([
     meta: {
       class: { th: 'w-[160px]' },
     },
-    cell: ({ row }) => (
-      <USelectMenu
-        class="w-full"
-        modelValue={row.original.status}
-        onUpdate:modelValue={(e) => (row.original.status = e)}
-        items={statusOptions}
-        valueKey="value"
-      />
-    ),
+    cell: () => <USelectMenu class="w-full" modelValue={'pending'} items={statusOptions} valueKey="value" />,
   },
   {
     id: 'tags',
     header: 'Tag',
     cell: ({ row }) => (
       <div class="flex flex-wrap gap-1">
-        {row.original.tags.map((tag) => (
+        {row.original.tags?.map((tag) => (
           <UBadge variant="soft" color="neutral" size="sm">
             {tag}
           </UBadge>
@@ -148,7 +101,6 @@ const pagination = ref({
     <template #header>
       <div class="flex items-center justify-between">
         <h3 class="text-base font-semibold">API 列表</h3>
-        <UButton color="primary" variant="soft" size="sm" @click="$emit('reload')">刷新</UButton>
       </div>
     </template>
     <div class="w-full space-y-4 pb-4">
@@ -156,7 +108,7 @@ const pagination = ref({
         ref="table"
         v-model:pagination="pagination"
         :loading="props.loading"
-        :data="tableInfo"
+        :data="props.data"
         :columns="columns"
         class="flex-1"
         :pagination-options="{
@@ -168,6 +120,7 @@ const pagination = ref({
           :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
           :items-per-page="table?.tableApi?.getState().pagination.pageSize"
           :total="table?.tableApi?.getFilteredRowModel().rows.length"
+          show-edges
           @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
         />
       </div>

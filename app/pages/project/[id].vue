@@ -6,7 +6,7 @@ import ProjectPreview from './components/ProjectPreview.vue';
 import ProjectEdit from './components/ProjectEdit.vue';
 import ProjectRun from './components/ProjectRun.vue';
 import ProjectMock from './components/ProjectMock.vue';
-import type { SelectMenuItem, TreeItem } from '@nuxt/ui';
+import type { TreeItem } from '@nuxt/ui';
 
 useHead({
   title: 'Project Detail',
@@ -17,54 +17,18 @@ const projectId = route.params.id as string;
 
 const loading = ref(true);
 const treeItems = ref<TreeItem[]>([]);
-const groupItems = ref<SelectMenuItem[]>([]);
-const apiList = ref<ProjectGetResEndpointGroup[]>([]);
-const apiDetail = ref<ProjectGetResEndpoint | null>(null);
+const groupItems = ref<Array<{ id: string; name: string }>>([]);
+const treeSelected = ref<{ id: string; name: string; isFolder: boolean } | null>(null);
 
 const loadProject = async () => {
   loading.value = true;
   try {
-    const res = await http.get<ProjectGetRes>(`/project/${projectId}`);
-    const converted = convertToTreeItem(res.endpointGroups);
-    treeItems.value = converted.treeItems;
-    groupItems.value = converted.groupItems;
-    apiList.value = res.endpointGroups;
-    apiDetail.value = null;
+    const res = await http.get(`/project/${projectId}/api-tree`);
+    treeItems.value = res.tree;
+    groupItems.value = res.groups;
   } finally {
     loading.value = false;
   }
-};
-
-onMounted(loadProject);
-
-// Helpers to transform data for Left tree
-const convertToTreeItem = (groups: ProjectGetResEndpointGroup[]) => {
-  const treeItems: TreeItem[] = [];
-  const groupNames: SelectMenuItem[] = [];
-
-  for (const group of groups) {
-    const { treeItems: subTreeItems, groupItems: subGroupItems } = convertToTreeItem(group.children);
-
-    const treeItem: TreeItem = {
-      ...group,
-      isFolder: true,
-      value: group.id,
-      label: group.name,
-      children: subTreeItems.concat(
-        group.endpoints.map((endpoint) => ({
-          ...endpoint,
-          isFolder: false,
-          value: endpoint.id,
-          label: endpoint.name,
-        }))
-      ),
-    };
-
-    treeItems.push(treeItem);
-    groupNames.push({ label: group.name, value: group.id }, ...subGroupItems);
-  }
-
-  return { treeItems, groupItems: groupNames };
 };
 
 const selectedMain = ref('api');
@@ -77,18 +41,26 @@ const sendRequest = () => {
   console.log('发送请求:', apiDetail.value);
 };
 
-const selectApi = (ep: TreeItem) => {
-  if (!ep) {
-    apiDetail.value = null;
-    apiList.value = treeItems.value as ProjectGetResEndpointGroup[];
-  } else if (ep.isFolder) {
-    apiDetail.value = null;
-    apiList.value = [ep as ProjectGetResEndpointGroup];
-  } else {
-    apiDetail.value = ep as ProjectGetResEndpoint;
-    apiList.value = [];
+const apiList = ref<ProjectApiListGetRes[]>([]);
+const apiDetail = ref<ProjectEndpointGetRes | null>(null);
+
+onMounted(loadProject);
+watch(
+  () => treeSelected.value,
+  async (v) => {
+    if (v && !v.isFolder) {
+      const res = await http.get<ProjectEndpointGetRes>(`/project/${projectId}/endpoint`, { endpointId: v.id });
+      apiDetail.value = res;
+      apiList.value = [];
+    } else {
+      apiList.value = await http.get(`/project/${projectId}/api-list`, { groupId: v?.id });
+      apiDetail.value = null;
+    }
+  },
+  {
+    immediate: true,
   }
-};
+);
 </script>
 
 <template>
@@ -106,11 +78,12 @@ const selectApi = (ep: TreeItem) => {
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
             <ProjectApiTree
+              v-model="treeSelected"
               :project-id="projectId"
               :items="treeItems"
               :loading="loading"
+              :selected="treeSelected"
               @reload="loadProject"
-              @select="selectApi"
             />
           </div>
 
@@ -192,8 +165,7 @@ const selectApi = (ep: TreeItem) => {
               :data="apiList"
               :group-items="groupItems"
               :loading="loading"
-              @select="selectApi"
-              @reload="loadProject"
+              @select="treeSelected = { id: $event.id, name: $event.name, isFolder: false }"
             />
           </div>
         </div>

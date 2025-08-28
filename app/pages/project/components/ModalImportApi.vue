@@ -41,16 +41,23 @@ const state = reactive<Schema>({
 const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-  const formData = new FormData();
-  formData.append('importType', event.data.importType);
-  formData.append('url', event.data.url || '');
-  if (event.data.file) {
-    formData.append('file', event.data.file);
-  }
+  loading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('importType', event.data.importType);
+    formData.append('url', event.data.url || '');
+    if (event.data.file) {
+      formData.append('file', event.data.file);
+    }
 
-  await http.post(`/project/${props.projectId}/import`, formData);
-  emit('close', true);
+    await http.post(`/project/${props.projectId}/import`, formData);
+    emit('close', true);
+  } finally {
+    loading.value = false;
+  }
 };
+
+const loading = ref(false);
 </script>
 
 <template>
@@ -78,7 +85,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     </template>
     <template #footer>
       <div class="button-group">
-        <UButton form="import-api-form" type="submit">Ok</UButton>
+        <UButton form="import-api-form" :loading="loading" type="submit">Ok</UButton>
         <UButton color="secondary" @click="$emit('close', false)">Cancel</UButton>
       </div>
     </template>

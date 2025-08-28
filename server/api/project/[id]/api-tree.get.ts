@@ -1,6 +1,6 @@
 import { useValidatedParams, v } from 'h3-valibot';
-import { eq } from 'drizzle-orm';
-import { projects } from '~~/server/db/schema';
+import { asc, eq } from 'drizzle-orm';
+import { endpoints, projects } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
   const { id } = await useValidatedParams(event, v.object({ id: v.string() }));
@@ -17,47 +17,48 @@ export default defineEventHandler(async (event) => {
     with: {
       endpointGroup: {
         with: {
-          endpoint: true,
+          endpoint: {
+            orderBy: asc(endpoints.name),
+          },
         },
+        orderBy: asc(endpoints.name),
       },
     },
   });
 
-  const egm = new Map<string, ProjectGetResEndpointGroup>();
+  const groups = new Set<{ id: string; name: string }>();
+  const map = new Map<string, ProjectApiTreeGetRes>();
   for (const eg of project?.endpointGroup || []) {
-    egm.set(eg.id, {
+    groups.add({ id: eg.id, name: eg.name });
+    map.set(eg.id, {
       id: eg.id,
       name: eg.name,
       description: eg.description,
-      createdAt: eg.createdAt,
-      updatedAt: eg.updatedAt,
-      children: [],
-      parentId: eg.parentId || null,
-      endpoints: eg.endpoint.map((endpoint) => ({
+      parentId: eg.parentId,
+      isFolder: true,
+      method: null,
+      path: null,
+      children: eg.endpoint.map((endpoint) => ({
         id: endpoint.id,
         name: endpoint.name,
         method: endpoint.method,
         path: endpoint.path,
         description: endpoint.description,
-        tags: endpoint.tags || [],
-        headers: endpoint.headers || [],
-        queryParams: endpoint.queryParams || [],
-        body: endpoint.body,
-        response: endpoint.response,
-        createdAt: endpoint.createdAt,
-        updatedAt: endpoint.updatedAt,
+        parentId: null,
+        isFolder: false,
+        children: [],
       })),
     });
   }
 
-  const endpointGroups: ProjectGetResEndpointGroup[] = [];
-  for (const group of egm.values()) {
+  const tree: ProjectApiTreeGetRes[] = [];
+  for (const group of map.values()) {
     if (!group.parentId) {
-      endpointGroups.push(group);
+      tree.push(group);
       continue;
     }
 
-    const parent = egm.get(group.parentId);
+    const parent = map.get(group.parentId);
     if (!parent) {
       console.error(`Parent group with ID ${group.parentId} not found for group ${group.id}`);
       continue;
@@ -66,14 +67,5 @@ export default defineEventHandler(async (event) => {
     parent.children.push(group);
   }
 
-  return {
-    id: project?.id || '',
-    name: project?.name || '',
-    description: project?.description || null,
-    icon: project?.icon || null,
-    groupId: project?.groupId || '',
-    endpointGroups: endpointGroups,
-    createdAt: project?.createdAt || new Date(),
-    updatedAt: project?.updatedAt || new Date(),
-  } as ProjectGetRes;
+  return { tree, groups: Array.from(groups) };
 });

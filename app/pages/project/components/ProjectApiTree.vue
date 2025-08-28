@@ -8,9 +8,10 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 const emits = defineEmits<{
-  (e: 'select', api: TreeItem): void;
   (e: 'reload'): void;
 }>();
+
+const modelValue = defineModel<TreeItem | null>();
 
 const searchQuery = ref('');
 const filteredEndpoints = computed(() => {
@@ -48,10 +49,6 @@ const filterEndpoints = (endpoints: TreeItem[], query: string): TreeItem[] => {
   }
 
   return res;
-};
-
-const selectApi = (v: TreeItem) => {
-  emits('select', v);
 };
 
 // 高亮搜索关键词的辅助函数
@@ -111,10 +108,10 @@ const importApi = async () => {
     </div>
     <TreeRoot
       v-if="filteredEndpoints.length > 0"
+      v-model="modelValue"
       class="max-h-[calc(100vh-18rem)] overflow-y-auto"
       :get-key="(m) => m.id"
       :items="filteredEndpoints"
-      @update:model-value="selectApi"
     >
       <TreeVirtualizer v-slot="{ item }" :estimate-size="28" :text-content="(v) => v.name" :overscan="8">
         <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isExpanded }" class="w-full">

@@ -1,11 +1,16 @@
-export const getColor = (method: PrismaJson.HttpMethod) => {
-  const colors = {
-    get: 'success' as const,
-    post: 'primary' as const,
-    put: 'warning' as const,
-    delete: 'error' as const,
-    patch: 'secondary' as const,
-  } as const;
-
-  return colors[method] || 'neutral';
+export const getColor = (method: HttpMethod) => {
+  switch (method) {
+    case 'GET':
+      return 'success';
+    case 'POST':
+      return 'primary';
+    case 'PUT':
+      return 'warning';
+    case 'DELETE':
+      return 'error';
+    case 'PATCH':
+      return 'secondary';
+    default:
+      return 'neutral';
+  }
 };
