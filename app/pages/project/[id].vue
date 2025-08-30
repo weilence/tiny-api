@@ -26,6 +26,7 @@ const loadProject = async () => {
     const res = await http.get(`/project/${projectId}/api-tree`);
     treeItems.value = res.tree;
     groupItems.value = res.groups;
+    treeSelected.value = null;
   } finally {
     loading.value = false;
   }
@@ -44,7 +45,6 @@ const sendRequest = () => {
 const apiList = ref<ProjectApiListGetRes[]>([]);
 const apiDetail = ref<ProjectEndpointGetRes | null>(null);
 
-onMounted(loadProject);
 watch(
   () => treeSelected.value,
   async (v) => {
@@ -57,10 +57,9 @@ watch(
       apiDetail.value = null;
     }
   },
-  {
-    immediate: true,
-  }
+  { immediate: true }
 );
+onMounted(loadProject);
 </script>
 
 <template>

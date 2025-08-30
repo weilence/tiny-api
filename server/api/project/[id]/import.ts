@@ -135,8 +135,8 @@ export default defineEventHandler(async (event) => {
   });
 });
 
-function handleOpenApi31Spec(_spec: OpenAPIV3_1.Document) {
-  return [];
+function handleOpenApi31Spec(spec: OpenAPIV3_1.Document) {
+  return handleOpenApi30Spec(spec as unknown as OpenAPIV3.Document);
 }
 
 function handleOpenApi30Spec(spec: OpenAPIV3.Document) {

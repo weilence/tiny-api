@@ -11,9 +11,12 @@ type Serialized<T> = T extends Date
       [K in keyof T]: Serialized<T[K]>;
     }
   : T;
-
 // 判断一个类型是否是 $ref
-type is<T> = [keyof T] extends ['$ref'] ? (['$ref'] extends [keyof T] ? true : false) : false;
+type is<T> = [keyof T] extends ['description' | 'summary' | '$ref']
+  ? ['$ref'] extends [keyof T]
+    ? true
+    : false
+  : false;
 
 // 从联合类型中过滤掉含有 $ref 的部分
 type excludeRef<T> = T extends any ? (is<T> extends true ? never : T) : never;

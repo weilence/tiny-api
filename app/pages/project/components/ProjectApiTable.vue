@@ -110,6 +110,7 @@ const pagination = ref({
         :loading="props.loading"
         :data="props.data"
         :columns="columns"
+        :get-row-id="(row) => row.id"
         class="flex-1"
         :pagination-options="{
           getPaginationRowModel: getPaginationRowModel(),
