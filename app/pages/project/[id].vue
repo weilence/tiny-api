@@ -18,7 +18,7 @@ const projectId = route.params.id as string;
 const loading = ref(true);
 const treeItems = ref<TreeItem[]>([]);
 const groupItems = ref<Array<{ id: string; name: string }>>([]);
-const treeSelected = ref<{ id: string; name: string; isFolder: boolean } | null>(null);
+const treeSelected = ref<{ id: string; name: string; isFolder: boolean }>();
 
 const loadProject = async () => {
   loading.value = true;
@@ -26,7 +26,7 @@ const loadProject = async () => {
     const res = await http.get(`/project/${projectId}/api-tree`);
     treeItems.value = res.tree;
     groupItems.value = res.groups;
-    treeSelected.value = null;
+    treeSelected.value = undefined;
   } finally {
     loading.value = false;
   }

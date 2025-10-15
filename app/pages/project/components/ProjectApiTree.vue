@@ -11,7 +11,7 @@ const emits = defineEmits<{
   (e: 'reload'): void;
 }>();
 
-const modelValue = defineModel<TreeItem | null>();
+const modelValue = defineModel<TreeItem>();
 
 const searchQuery = ref('');
 const filteredEndpoints = computed(() => {
@@ -106,45 +106,34 @@ const importApi = async () => {
     <div v-if="searchQuery && filteredEndpoints.length > 0" class="text-xs text-muted mt-1">
       找到 {{ filteredEndpoints.length }} 个结果
     </div>
-    <TreeRoot
+    <UTree
       v-if="filteredEndpoints.length > 0"
       v-model="modelValue"
-      class="max-h-[calc(100vh-18rem)] overflow-y-auto"
+      label-key="name"
       :get-key="(m) => m.id"
+      virtualize
       :items="filteredEndpoints"
+      class="max-h-[calc(100vh-18rem)] overflow-y-auto"
     >
-      <TreeVirtualizer v-slot="{ item }" :estimate-size="28" :text-content="(v) => v.name" :overscan="8">
-        <TreeItem :key="item._id" v-bind="item.bind" v-slot="{ isSelected, isExpanded }" class="w-full">
-          <div
-            class="flex items-center cursor-pointer space-x-2 hover:bg-accented py-0.5 min-w-0"
-            :class="{
-              'bg-muted': isSelected,
-            }"
-            :style="{ 'padding-left': `${item.level - 0.5}rem` }"
-          >
-            <template v-if="item.value.isFolder">
-              <UIcon v-if="isExpanded" name="i-heroicons-chevron-down" class="h-4 w-4" />
-              <UIcon v-else name="i-heroicons-chevron-right" class="h-4 w-4" />
-            </template>
-            <UBadge
-              v-else
-              :color="getColor(item.value.method)"
-              variant="solid"
-              size="sm"
-              class="w-12 flex justify-center"
-            >
-              {{ item.value.method.toUpperCase() || 'GET' }}
-            </UBadge>
-            <span :class="{ 'text-primary': isSelected }" class="truncate flex-1 min-w-0" :title="item.value.name">
-              <template v-for="(part, partIndex) in getHighlightedText(item.value.name, searchQuery)" :key="partIndex">
-                <mark v-if="part.highlight" class="rounded px-0.5">{{ part.text }}</mark>
-                <template v-else>{{ part.text }}</template>
-              </template>
-            </span>
-          </div>
-        </TreeItem>
-      </TreeVirtualizer>
-    </TreeRoot>
+      <template #item-leading="{ item }">
+        <UBadge
+          v-if="!item.isFolder"
+          :color="getColor(item.method || 'GET')"
+          variant="solid"
+          size="sm"
+          class="w-12 justify-center"
+          :label="item.method?.toUpperCase()"
+        />
+      </template>
+      <template #item-label="{ item, selected }">
+        <span :class="{ 'text-primary': selected }" class="truncate flex-1 min-w-0" :title="item.name">
+          <template v-for="(part, partIndex) in getHighlightedText(item.name, searchQuery)" :key="partIndex">
+            <mark v-if="part.highlight" class="rounded px-0.5">{{ part.text }}</mark>
+            <template v-else>{{ part.text }}</template>
+          </template>
+        </span>
+      </template>
+    </UTree>
 
     <div v-else-if="searchQuery && filteredEndpoints.length === 0" class="flex items-center justify-center py-8">
       <div class="text-center">
