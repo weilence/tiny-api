@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import ParameterRow from './ParameterRow.vue';
+import { UButton } from '#components';
+import type { TableColumn } from '@nuxt/ui';
 
 interface Props {
   parameters: Parameter | Parameter[];
@@ -7,7 +8,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Convert single parameter to array for consistent handling
 const parameterList = computed(() => {
   if (Array.isArray(props.parameters)) {
     return props.parameters;
@@ -15,38 +15,61 @@ const parameterList = computed(() => {
   return [props.parameters];
 });
 
-// Function to generate unique node ID
-const getNodeId = (param: Parameter, parentPath: string = '') => {
-  return parentPath ? `${parentPath}.${param.key}` : param.key;
-};
+const columns: TableColumn<Parameter>[] = [
+  {
+    id: 'key',
+    header: '参数名称',
+  },
+  {
+    id: 'type',
+    accessorFn: (param) => (param.isArray ? `${param.type}[]` : param.type),
+    header: '类型',
+  },
+  {
+    id: 'required',
+    accessorFn: (param) => (param.required ? '必填' : '可选'),
+    header: '属性',
+  },
+  {
+    id: 'value',
+    accessorFn: (param) => param.value || '-',
+    header: '示例值',
+  },
+  {
+    id: 'description',
+    header: '说明',
+  },
+];
 </script>
 
 <template>
-  <div class="border border-accented rounded-lg overflow-hidden">
-    <!-- Table header -->
-    <div class="bg-muted border-b border-accented">
-      <div class="flex items-center">
-        <div class="py-3 px-4 w-64">
-          <span class="text-sm font-medium">参数名称</span>
-        </div>
-        <div class="py-3 px-4 w-32">
-          <span class="text-sm font-medium">类型</span>
-        </div>
-        <div class="py-3 px-4 w-30">
-          <span class="text-sm font-medium">属性</span>
-        </div>
-        <div class="py-3 px-4 w-40">
-          <span class="text-sm font-medium">示例值</span>
-        </div>
-        <div class="py-3 px-4 flex-1 min-w-32">
-          <span class="text-sm font-medium">说明</span>
-        </div>
+  <UTable
+    :data="parameterList"
+    :columns="columns"
+    :get-sub-rows="(row) => row.children"
+    :ui="{
+      base: 'border-separate border-spacing-0',
+      tbody: '[&>tr]:last:[&>td]:border-b-0',
+      tr: 'group',
+      td: 'empty:p-0 group-has-[td:not(:empty)]:border-b border-default',
+    }"
+  >
+    <template #key-cell="{ row }">
+      <div class="flex gap-1" :style="{ paddingLeft: `${row.depth}rem` }">
+        <UButton
+          color="neutral"
+          variant="outline"
+          size="xs"
+          :icon="row.getIsExpanded() ? 'i-lucide-minus' : 'i-lucide-plus'"
+          :class="!row.getCanExpand() && 'invisible'"
+          :ui="{
+            base: 'p-0 rounded-sm',
+            leadingIcon: 'size-4',
+          }"
+          @click="row.toggleExpanded()"
+        />
+        <span class="font-mono text-sm text-info">{{ row.original.key }}</span>
       </div>
-    </div>
-
-    <!-- Table body -->
-    <div>
-      <ParameterRow v-for="param in parameterList" :key="getNodeId(param)" :parameter="param" :level="0" />
-    </div>
-  </div>
+    </template>
+  </UTable>
 </template>
