@@ -1,10 +1,13 @@
+import type { FetchResult } from '#app';
+import { StorageSerializers, useLocalStorage } from '@vueuse/core';
+
 export const useAuth = () => {
   const overlay = useOverlay();
-
-  const rememberMe = useState<boolean>('remember_me', () => localStorage.getItem('remember_me') === 'true');
-  const token = useState<string | null>('token', () =>
-    rememberMe.value ? localStorage.getItem('user_token') : sessionStorage.getItem('user_token')
-  );
+  const rememberMe = useLocalStorage<boolean>('remember_me', false);
+  const token = useLocalStorage<string | null>('user_token', null);
+  const user = useLocalStorage<FetchResult<'/api/user', 'get'>>('user_data', null, {
+    serializer: StorageSerializers.object,
+  });
 
   // 登录函数
   const login = async (credentials: {
@@ -13,52 +16,39 @@ export const useAuth = () => {
     remember: boolean;
     provider?: 'local' | 'ldap';
   }) => {
-    // 这里应该调用你的登录 API
-    const res = await http.post('/auth/login', credentials);
-
-    const { token: tokenData } = res;
-
     // 保存令牌
-    localStorage.setItem('remember_me', credentials.remember ? 'true' : 'false');
-    if (credentials.remember) {
-      localStorage.setItem('user_token', tokenData);
-    } else {
-      sessionStorage.setItem('user_token', tokenData);
-    }
-
     rememberMe.value = credentials.remember;
+
+    const { token: tokenData, ...userData } = await http.post('/api/auth/login', credentials);
+
     token.value = tokenData;
+    user.value = userData;
     return { success: true };
+  };
+
+  const refreshUser = async () => {
+    const res = await http.get('/api/user');
+    user.value = res;
   };
 
   // 注册函数
   const register = async (userData: { username: string; email: string; password: string }) => {
-    await http.post('/auth/register', userData);
-
+    await http.post('/api/auth/register', userData);
     return { success: true, message: '注册成功' };
   };
 
   // 登出函数
   const logout = async () => {
-    clearAuth();
+    token.value = null;
+    user.value = null;
     overlay.closeAll();
     await navigateTo('/auth/login');
-  };
-
-  // 清除认证信息
-  const clearAuth = () => {
-    token.value = null;
-    if (rememberMe.value) {
-      localStorage.removeItem('user_token');
-    } else {
-      sessionStorage.removeItem('user_token');
-    }
   };
 
   // 忘记密码
   const forgotPassword = async (_email: string) => {
     // 这里应该调用你的忘记密码 API
-    // const response = await http.POST('/auth/forgot-password', { email })
+    // const response = await http.POST('/api/auth/forgot-password', { email })
 
     // 模拟 API 响应
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -69,10 +59,11 @@ export const useAuth = () => {
   return {
     token: readonly(token),
     rememberMe: readonly(rememberMe),
+    user: readonly(user),
+    refreshUser,
     login,
     register,
     logout,
-    clearAuth,
     forgotPassword,
   };
 };

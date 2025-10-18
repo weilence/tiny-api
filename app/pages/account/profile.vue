@@ -101,7 +101,7 @@ import { parseAbsoluteToLocal, toCalendarDate } from '@internationalized/date';
 import { formatLastLoginTime } from '~/utils/date';
 import ModalChangePassword from './components/ModalChangePassword.vue';
 
-const { user, refreshUser } = useUser();
+const { user, refreshUser } = useAuth();
 const toast = useToast();
 const overlay = useOverlay();
 
@@ -139,7 +139,7 @@ async function saveProfile() {
   saving.value = true;
 
   try {
-    await http.put(`/user`, {
+    await http.put(`/api/user`, {
       username: profileForm.username,
       email: profileForm.email,
     });

@@ -4,6 +4,8 @@ import { useValidatedParams, v } from 'h3-valibot';
 import type { OpenAPI, OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import { eq, inArray } from 'drizzle-orm';
 import { endpointGroups, endpoints } from '~~/server/db/schema';
+import type { EndpointResponse, HttpMethod, Parameter, ProjectImportReq } from '~~/shared/types/project';
+import type { Schema } from '~~/shared/types/common';
 
 export async function parseMultipartObject<T>(event: any) {
   const parts = await readMultipartFormData(event);
@@ -127,7 +129,8 @@ export default defineEventHandler(async (event) => {
           ...endpoint,
           headers: endpoint.headers,
           queryParams: endpoint.queryParams,
-          body: endpoint.body || null,
+          body: endpoint.body,
+          response: endpoint.response,
           groupId: group.id,
         }));
       })
@@ -149,15 +152,8 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
       const headers: Parameter[] = [];
       const queryParams: Parameter[] = [];
       for (const parameter of operation.parameters || []) {
-        const p = {} as Parameter;
+        const p = handleParameterBase(parameter);
         p.key = parameter.name;
-        p.value = '';
-        p.description = parameter.description || '';
-        p.required = parameter.required || false;
-        p.enabled = true;
-        if (parameter.schema) {
-          p.type = parameter.schema.type || '';
-        }
 
         switch (parameter.in) {
           case 'query':
@@ -177,6 +173,25 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
         }
       }
 
+      const response: EndpointResponse[] = [];
+      if (operation.responses) {
+        for (const [status, resp] of Object.entries(operation.responses)) {
+          for (const [contentType, content] of Object.entries(resp.content ?? {})) {
+            const schema = content.schema;
+            response.push({
+              status: +status,
+              contentType: contentType,
+              headers: Object.entries(resp.headers ?? {}).map(([key, header]) => {
+                const h = handleParameterBase(header);
+                h.key = key;
+                return h;
+              }),
+              body: schema && convertSchemaToParameter(schema),
+            });
+          }
+        }
+      }
+
       const endpoint = {
         method: method.toUpperCase() as HttpMethod,
         path: path,
@@ -186,12 +201,27 @@ function handleOpenApi30Spec(spec: OpenAPIV3.Document) {
         headers: headers,
         queryParams: queryParams,
         body: body,
+        response: response,
       };
       endpoints.push(endpoint);
     }
   }
 
   return endpoints;
+}
+
+function handleParameterBase(parameter: Schema<OpenAPIV3.ParameterBaseObject>) {
+  const p: Parameter = {
+    key: '',
+    value: '',
+    description: parameter.description || '',
+    required: parameter.required || false,
+    enabled: true,
+    type: parameter.schema?.type || '',
+    isArray: false,
+  };
+
+  return p;
 }
 
 interface SpecEndpoint {
@@ -203,6 +233,7 @@ interface SpecEndpoint {
   headers: Parameter[];
   queryParams: Parameter[];
   body: Parameter | null;
+  response: EndpointResponse[];
 }
 
 function handleSwaggerSpec(spec: OpenAPIV2.Document) {
@@ -279,6 +310,7 @@ function handleSwaggerSpec(spec: OpenAPIV2.Document) {
         headers: headers,
         queryParams: queryParams,
         body: body,
+        response: [],
       };
       endpoints.push(endpoint);
     }

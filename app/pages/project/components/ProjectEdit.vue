@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const model = defineModel<ProjectEndpointGetRes>({ required: true });
+import type { ProjectEndpointGetRes } from '~~/shared/types/project';
+
+const model = defineModel<SerializeObject<ProjectEndpointGetRes>>({ required: true });
 
 const toast = useToast();
 const addHeader = () => {
@@ -12,7 +14,7 @@ const addHeader = () => {
     return;
   }
 
-  model.value.headers.push({
+  model.value.headers?.push({
     key: '',
     value: '',
     description: '',
@@ -32,7 +34,7 @@ const removeHeader = (index: number) => {
     });
     return;
   }
-  model.value.headers.splice(index, 1);
+  model.value.headers?.splice(index, 1);
 };
 
 const addQueryParam = () => {
@@ -45,7 +47,7 @@ const addQueryParam = () => {
     return;
   }
 
-  model.value.queryParams.push({
+  model.value.queryParams?.push({
     key: '',
     value: '',
     description: '',
@@ -66,7 +68,7 @@ const removeQueryParam = (index: number) => {
     return;
   }
 
-  model.value.queryParams.splice(index, 1);
+  model.value.queryParams?.splice(index, 1);
 };
 </script>
 

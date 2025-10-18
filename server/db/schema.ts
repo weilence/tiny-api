@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, foreignKey, jsonb, primaryKey, pgEnum, uuid } from 'drizzle-orm/pg-core';
+import type { EndpointResponse, Parameter } from '~~/shared/types/project';
 
 export const projectRole = pgEnum('ProjectRole', ['GUEST', 'DEVELOPER', 'ADMIN']);
 export const userRole = pgEnum('UserRole', ['MEMBER', 'ADMIN']);
@@ -108,7 +109,7 @@ export const endpoints = pgTable('Endpoint', {
   description: text().notNull(),
   tags: text().array().default([]),
   body: jsonb().$type<Parameter>(),
-  response: jsonb().$type<EndpointResponse>(),
+  response: jsonb().$type<EndpointResponse[]>(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp()
     .$onUpdate(() => new Date())

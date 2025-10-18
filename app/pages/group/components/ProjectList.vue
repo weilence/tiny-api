@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ModalConfirmDelete } from '#components';
 import ModalProjectDetail from './ModalProjectDetail.vue';
+import type { ProjectQueryRes } from '~~/shared/types/project';
 
 const props = defineProps<{
   groupId: string | null;
 }>();
-const projects = ref<ProjectQueryRes[]>([]);
+const projects = ref<SerializeObject<ProjectQueryRes>[]>([]);
 
 const loadGroup = async (groupId: string) => {
-  const res = await http.get<ProjectQueryRes[]>(`/project`, { groupId });
+  const res = await http.get(`/api/project`, { groupId });
   projects.value = res;
 };
 
@@ -46,7 +47,7 @@ const createProject = async () => {
   }
 };
 
-const editProject = async (project: ProjectQueryRes) => {
+const editProject = async (project: SerializeObject<ProjectQueryRes>) => {
   if (props.groupId === null) {
     toast.add({
       title: 'Please select a group first',
@@ -80,7 +81,7 @@ const deleteProject = async (projectId: string) => {
     title: 'Delete Project',
     description: 'Are you sure you want to delete this project? This action cannot be undone.',
     ok: async () => {
-      await http.delete(`/project/${projectId}`);
+      await http.delete(`/api/project/${projectId}`);
 
       toast.add({
         title: 'Project deleted successfully',

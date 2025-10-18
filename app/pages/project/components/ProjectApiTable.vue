@@ -2,6 +2,7 @@
 import type { TableColumn } from '@nuxt/ui';
 import { getPaginationRowModel } from '@tanstack/vue-table';
 import { UBadge, UButton, USelectMenu } from '#components';
+import type { ProjectApiListGetRes } from '~~/shared/types/project';
 
 const props = defineProps<{
   data: ProjectApiListGetRes[];

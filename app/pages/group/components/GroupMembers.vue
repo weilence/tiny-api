@@ -26,7 +26,7 @@ const load = async () => {
   }
   loading.value = true;
   try {
-    const res = await http.get<GroupMembersGetRes>(`/group/${props.groupId}/members`);
+    const res = await http.get(`/api/group/${props.groupId}/members`);
     members.value = res.members;
     selfRole.value = res.selfRole;
   } finally {
@@ -50,7 +50,7 @@ const openAdd = async () => {
 
 const changeRole = async (userId: string, role: MemberRole) => {
   if (!props.groupId) return;
-  await http.put(`/group/${props.groupId}/members/${userId}`, { role });
+  await http.put(`/api/group/${props.groupId}/members/${userId}`, { role });
   toast.add({ title: '角色已更新', color: 'success' });
   await load();
 };
@@ -61,7 +61,7 @@ const removeMember = async (userId: string) => {
     title: '移除成员',
     description: '确定要从分组移除此成员吗？',
     ok: async () => {
-      await http.delete(`/group/${props.groupId}/members/${userId}`);
+      await http.delete(`/api/group/${props.groupId}/members/${userId}`);
     },
   });
   if (await ins.result) {

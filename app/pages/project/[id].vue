@@ -6,7 +6,7 @@ import ProjectPreview from './components/ProjectPreview.vue';
 import ProjectEdit from './components/ProjectEdit.vue';
 import ProjectRun from './components/ProjectRun.vue';
 import ProjectMock from './components/ProjectMock.vue';
-import type { TreeItem } from '@nuxt/ui';
+import type { ProjectApiListGetRes, ProjectEndpointGetRes } from '~~/shared/types/project';
 
 useHead({
   title: 'Project Detail',
@@ -15,22 +15,14 @@ useHead({
 const route = useRoute();
 const projectId = route.params.id as string;
 
-const loading = ref(true);
-const treeItems = ref<TreeItem[]>([]);
-const groupItems = ref<Array<{ id: string; name: string }>>([]);
 const treeSelected = ref<{ id: string; name: string; isFolder: boolean }>();
-
-const loadProject = async () => {
-  loading.value = true;
-  try {
-    const res = await http.get(`/project/${projectId}/api-tree`);
-    treeItems.value = res.tree;
-    groupItems.value = res.groups;
+const { data: projectData, pending: loading } = useApi(`/api/project/${projectId}/api-tree`, {
+  onResponse: () => {
     treeSelected.value = undefined;
-  } finally {
-    loading.value = false;
-  }
-};
+  },
+});
+const treeItems = computed(() => projectData.value?.tree || []);
+const groupItems = computed(() => projectData.value?.groups || []);
 
 const selectedMain = ref('api');
 const mainTabs = [
@@ -43,23 +35,23 @@ const sendRequest = () => {
 };
 
 const apiList = ref<ProjectApiListGetRes[]>([]);
-const apiDetail = ref<ProjectEndpointGetRes | null>(null);
+const apiDetail = ref<SerializeObject<ProjectEndpointGetRes>>();
 
 watch(
   () => treeSelected.value,
   async (v) => {
     if (v && !v.isFolder) {
-      const res = await http.get<ProjectEndpointGetRes>(`/project/${projectId}/endpoint`, { endpointId: v.id });
+      const res = await http.get(`/api/project/${projectId}/endpoint`, { endpointId: v?.id });
       apiDetail.value = res;
       apiList.value = [];
     } else {
-      apiList.value = await http.get(`/project/${projectId}/api-list`, { groupId: v?.id });
-      apiDetail.value = null;
+      const res = await http.get(`/api/project/${projectId}/api-list`, { groupId: v?.id });
+      apiList.value = res;
+      apiDetail.value = undefined;
     }
   },
   { immediate: true }
 );
-onMounted(loadProject);
 </script>
 
 <template>
@@ -76,14 +68,7 @@ onMounted(loadProject);
       <template #api>
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
-            <ProjectApiTree
-              v-model="treeSelected"
-              :project-id="projectId"
-              :items="treeItems"
-              :loading="loading"
-              :selected="treeSelected"
-              @reload="loadProject"
-            />
+            <ProjectApiTree v-model="treeSelected" :project-id="projectId" :items="treeItems" :loading="loading" />
           </div>
 
           <UCard v-if="apiDetail" class="min-w-0 flex-[2_1_66.67%]">

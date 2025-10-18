@@ -50,7 +50,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       formData.append('file', event.data.file);
     }
 
-    await http.post(`/project/${props.projectId}/import`, formData);
+    await http.post(`/api/project/${props.projectId}/import`, formData);
     emit('close', true);
   } finally {
     loading.value = false;

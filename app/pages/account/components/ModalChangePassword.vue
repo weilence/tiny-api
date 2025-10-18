@@ -27,7 +27,7 @@ const toast = useToast();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   try {
-    await http.put('/user/password', {
+    await http.put('/api/user/password', {
       oldPassword: event.data.oldPassword,
       newPassword: event.data.newPassword,
     });

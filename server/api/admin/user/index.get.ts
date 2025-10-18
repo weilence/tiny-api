@@ -2,11 +2,11 @@ import { ilike, or, desc } from 'drizzle-orm';
 import { users } from '~~/server/db/schema';
 
 export default defineEventHandler(async (event) => {
-  const { q } = getQuery(event) as { q?: string };
+  const { search } = getQuery(event) as { search?: string };
 
-  const usersResult: AdminUserListRes[] = await db.query.users.findMany({
-    where: q
-      ? or(ilike(users.username, `%${q}%`), ilike(users.email, `%${q}%`), ilike(users.name, `%${q}%`))
+  const usersResult = await db.query.users.findMany({
+    where: search
+      ? or(ilike(users.username, `%${search}%`), ilike(users.email, `%${search}%`), ilike(users.name, `%${search}%`))
       : undefined,
     columns: {
       id: true,

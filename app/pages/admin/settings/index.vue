@@ -103,7 +103,7 @@ const ldapState = reactive<LdapSchema>({
 });
 
 onMounted(async () => {
-  const list = await http.get('/admin/settings');
+  const list = await http.get('/api/admin/settings');
   const map = Object.fromEntries(list.map((s: any) => [s.key, s.value]));
   if (typeof map.allowRegister === 'boolean') allowState.allowRegister = map.allowRegister;
   if (typeof map.ldap === 'object' && map.ldap) Object.assign(ldapState, map.ldap);
@@ -112,7 +112,7 @@ onMounted(async () => {
 async function onSaveAllow(event: FormSubmitEvent<AllowSchema>) {
   savingAllow.value = true;
   try {
-    await http.post('/admin/settings', { key: 'allowRegister', value: event.data.allowRegister });
+    await http.post('/api/admin/settings', { key: 'allowRegister', value: event.data.allowRegister });
     toast.add({ title: '已保存', color: 'success' });
   } finally {
     savingAllow.value = false;
@@ -124,7 +124,7 @@ async function onSaveAllow(event: FormSubmitEvent<AllowSchema>) {
 async function onSaveLdap(event: FormSubmitEvent<LdapSchema>) {
   savingLdap.value = true;
   try {
-    await http.post('/admin/settings', { key: 'ldap', value: event.data });
+    await http.post('/api/admin/settings', { key: 'ldap', value: event.data });
     toast.add({ title: '已保存', color: 'success' });
   } finally {
     savingLdap.value = false;

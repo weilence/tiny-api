@@ -12,12 +12,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return;
   }
 
-  const { user } = useUser();
-  if (user.value === null) {
+  const { user } = useAuth();
+  if (!user.value) {
     return navigateTo('/auth/login');
   }
 
-  if (to.path.startsWith('/admin') && user.value?.role !== 'ADMIN') {
+  if (to.path.startsWith('/admin') && user.value.role !== 'ADMIN') {
     return abortNavigation();
   }
 });

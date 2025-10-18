@@ -1,14 +1,3 @@
-interface AdminUserListRes {
-  id: string;
-  email: string;
-  username: string;
-  name?: string | null;
-  role: 'MEMBER' | 'ADMIN';
-  lastLoginAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 interface AdminUserCreateReq {
   email: string;
   username: string;

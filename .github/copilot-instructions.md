@@ -32,8 +32,8 @@ Use the typed `http` utility instead of direct `$fetch`:
 
 ```typescript
 // ✅ Correct - auto-auth, typed, error handling
-const data = await http.get('/user');
-const result = await http.post('/project', { name, groupId });
+const data = await http.get('/api/user');
+const result = await http.post('/api/project', { name, groupId });
 
 // ❌ Avoid - manual auth, no error handling
 const data = await $fetch('/api/user');
@@ -108,9 +108,9 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   if (props.mode === 'edit' && props.groupData) {
-    await http.put(`/group/${props.groupData.id}`, event.data);
+    await http.put(`/api/group/${props.groupData.id}`, event.data);
   } else {
-    await http.post('/group', event.data);
+    await http.post('/api/group', event.data);
   }
 
   emit('close', true); // true = refresh parent data

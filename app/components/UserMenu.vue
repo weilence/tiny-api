@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
-const { user } = useUser();
-const { logout } = useAuth();
+const { logout, user } = useAuth();
 
 // 计算菜单项
 const userMenuItems = computed(() => {
@@ -44,7 +43,7 @@ const userMenuItems = computed(() => {
     label: '退出登录',
     icon: 'i-heroicons-arrow-right-on-rectangle',
     onSelect: async () => {
-      await http.post('/auth/logout');
+      await http.post('/api/auth/logout');
       await logout();
     },
   });

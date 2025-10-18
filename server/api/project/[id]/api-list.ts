@@ -1,5 +1,6 @@
 import { asc, eq } from 'drizzle-orm';
 import { endpointGroups, endpoints } from '~~/server/db/schema';
+import type { ProjectApiListGetRes } from '~~/shared/types/project';
 
 export default defineEventHandler(async (event) => {
   const { id } = await useValidatedParams(event, v.object({ id: v.string() }));

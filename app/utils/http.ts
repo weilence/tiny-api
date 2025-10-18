@@ -1,61 +1,66 @@
-import type { MiddlewareOf, NitroFetchOptions, NitroFetchRequest } from 'nitropack';
-
-type RemovePrefix<T> = T extends `/api${infer R}` ? R | (string & {}) : never;
-type ApiPath = RemovePrefix<NitroFetchRequest>;
+import type { FetchResult } from '#app';
+import type { NitroFetchOptions, NitroFetchRequest } from 'nitropack';
 
 export const http = {
-  get: async <T = unknown, R extends ApiPath = ApiPath>(
+  get: async <T = unknown, R extends NitroFetchRequest = NitroFetchRequest>(
     url: R,
     query?: Record<string, any>,
-    options?: NitroFetchOptions<NitroFetchRequest>
+    options?: NitroFetchOptions<R>
   ) => {
     const { $api } = useNuxtApp();
-    const res = await $api(url as string, {
+    const res = await $api(url, {
       ...options,
-      method: 'GET',
+      method: 'GET' as any,
       query: query,
     });
 
-    return res as unknown extends T ? MiddlewareOf<`/api${R}`, 'get'> : T;
+    // @ts-expect-error type inference
+    return res as unknown extends T ? FetchResult<R, 'get'> : T;
   },
 
-  post: async <T = unknown, R extends ApiPath = ApiPath>(
+  post: async <T = unknown, R extends NitroFetchRequest = NitroFetchRequest>(
     url: R,
     data?: RequestInit['body'] | Record<string, any>,
     options?: NitroFetchOptions<NitroFetchRequest>
   ) => {
     const { $api } = useNuxtApp();
-    const res = await $api(url as string, {
+    const res = await $api(url, {
       ...options,
-      method: 'POST',
+      method: 'POST' as any,
       body: data,
     });
 
-    return res as unknown extends T ? MiddlewareOf<`/api${R}`, 'post'> : T;
+    // @ts-expect-error type inference
+    return res as unknown extends T ? FetchResult<R, 'post'> : T;
   },
 
-  put: async <T = unknown, R extends ApiPath = ApiPath>(
+  put: async <T = unknown, R extends NitroFetchRequest = NitroFetchRequest>(
     url: R,
     data: RequestInit['body'] | Record<string, any>,
     options?: NitroFetchOptions<NitroFetchRequest>
   ) => {
     const { $api } = useNuxtApp();
-    const res = await $api(url as string, {
+    const res = await $api(url, {
       ...options,
-      method: 'PUT',
+      method: 'PUT' as any,
       body: data,
     });
 
-    return res as unknown extends T ? MiddlewareOf<`/api${R}`, 'put'> : T;
+    // @ts-expect-error type inference
+    return res as unknown extends T ? FetchResult<R, 'put'> : T;
   },
 
-  delete: async <T = unknown, R extends ApiPath = ApiPath>(url: R, options?: NitroFetchOptions<NitroFetchRequest>) => {
+  delete: async <T = unknown, R extends NitroFetchRequest = NitroFetchRequest>(
+    url: R,
+    options?: NitroFetchOptions<NitroFetchRequest>
+  ) => {
     const { $api } = useNuxtApp();
-    const res = await $api(url as string, {
+    const res = await $api(url, {
       ...options,
-      method: 'DELETE',
+      method: 'DELETE' as any,
     });
 
-    return res as unknown extends T ? MiddlewareOf<`/api${R}`, 'delete'> : T;
+    // @ts-expect-error type inference
+    return res as unknown extends T ? FetchResult<R, 'delete'> : T;
   },
 };

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui';
 import * as v from 'valibot';
-import { PROJECT_ICONS } from '../../../../shared/constants/icons';
+import { PROJECT_ICONS } from '~~/shared/constants/icons';
+import type { ProjectQueryRes } from '~~/shared/types/project';
 
 interface Props {
   groupId: string;
   mode?: 'create' | 'edit';
-  projectData?: ProjectQueryRes;
+  projectData?: SerializeObject<ProjectQueryRes>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -32,12 +33,12 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   if (props.mode === 'edit' && props.projectData) {
-    await http.put(`/project/${props.projectData.id}`, {
+    await http.put(`/api/project/${props.projectData.id}`, {
       ...event.data,
       groupId: props.groupId,
     });
   } else {
-    await http.post(`project`, {
+    await http.post(`/api/project`, {
       ...event.data,
       groupId: props.groupId,
     });

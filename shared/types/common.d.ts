@@ -1,16 +1,9 @@
-/**
- * 将服务端类型转换为客户端类型（将 Date 转换为 string）
- * 用于处理 Nuxt 服务端渲染时 Date 类型序列化为字符串的问题
- */
-type Serialized<T> = T extends Date
-  ? string
-  : T extends Array<infer U>
-  ? Array<Serialized<U>>
-  : T extends object
-  ? {
-      [K in keyof T]: Serialized<T[K]>;
-    }
-  : T;
+import type { SerializeObject as OriginSerializeObject } from 'nitropack';
+
+declare global {
+  type SerializeObject<T extends object> = OriginSerializeObject<T>;
+}
+
 // 判断一个类型是否是 $ref
 type is<T> = [keyof T] extends ['description' | 'summary' | '$ref']
   ? ['$ref'] extends [keyof T]
@@ -22,7 +15,7 @@ type is<T> = [keyof T] extends ['description' | 'summary' | '$ref']
 type excludeRef<T> = T extends any ? (is<T> extends true ? never : T) : never;
 
 // 递归处理
-type Schema<T> =
+export type Schema<T> =
   // 如果是数组，递归处理元素，并过滤 $ref
   T extends (infer U)[]
     ? Schema<excludeRef<U>>[]

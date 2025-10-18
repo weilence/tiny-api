@@ -18,7 +18,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-toned">总用户数</p>
-            <p class="text-2xl font-bold text-highlighted">{{ users.length }}</p>
+            <p class="text-2xl font-bold text-highlighted">{{ users?.length }}</p>
           </div>
         </div>
       </UCard>
@@ -53,13 +53,7 @@
       <template #header>
         <div class="flex items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-highlighted">用户列表</h2>
-          <UInput
-            v-model="searchQuery"
-            placeholder="搜索用户..."
-            icon="i-heroicons-magnifying-glass"
-            class="w-80"
-            @update:model-value="loadUsers(searchQuery)"
-          />
+          <UInput v-model="searchQuery" placeholder="搜索用户..." icon="i-heroicons-magnifying-glass" class="w-80" />
         </div>
       </template>
 
@@ -77,10 +71,10 @@
 
 <script setup lang="tsx">
 import type { TableColumn } from '@nuxt/ui';
-import { useDebounceFn } from '@vueuse/core';
 import { formatLastLoginTime } from '~/utils/date';
 import { ModalConfirmDelete, UBadge, UButton } from '#components';
 import ModalUserDetail from './components/ModalUserDetail.vue';
+import { useDebounce } from '@vueuse/core';
 
 // 页面元数据
 definePageMeta({
@@ -88,12 +82,19 @@ definePageMeta({
 });
 
 // 响应式数据
-const users = ref<AdminUserListRes[]>([]);
-const loading = ref(false);
 const searchQuery = ref('');
+const searchQueryDebounce = useDebounce(searchQuery, 300);
+const { data: users, refresh: refreshUsers } = await useApi('/api/admin/user', {
+  query: {
+    search: searchQueryDebounce,
+  },
+});
+type AdminUserListRes = NonNullable<typeof users.value>[number];
+
+const loading = ref(false);
 
 const toast = useToast();
-const { user: currentUser } = useUser();
+const { user: currentUser } = useAuth();
 const overlay = useOverlay();
 
 // 创建弹窗实例
@@ -103,9 +104,9 @@ const modalConfirmDelete = overlay.create(ModalConfirmDelete);
 // 计算属性
 const currentUserId = computed(() => currentUser.value?.id);
 
-const adminCount = computed(() => users.value.filter((u) => u.role === 'ADMIN').length);
+const adminCount = computed(() => users.value?.filter((u) => u.role === 'ADMIN').length);
 
-const memberCount = computed(() => users.value.filter((u) => u.role === 'MEMBER').length);
+const memberCount = computed(() => users.value?.filter((u) => u.role === 'MEMBER').length);
 
 // 表格列定义
 const columns: TableColumn<AdminUserListRes>[] = [
@@ -177,39 +178,13 @@ const columns: TableColumn<AdminUserListRes>[] = [
   },
 ];
 
-// 方法
-let controller: AbortController | null = null;
-const loadUsers = useDebounceFn(async (q?: string) => {
-  if (controller) {
-    controller.abort(); // 取消上一个请求
-  }
-  controller = new AbortController(); // 创建新的控制器
-  loading.value = true;
-
-  try {
-    const data = await http.get<AdminUserListRes[], '/admin/user'>('/admin/user', q ? { q } : undefined, {
-      signal: controller.signal,
-    });
-    users.value = data;
-  } catch (error) {
-    console.error('加载用户列表失败:', error);
-    toast.add({
-      title: '加载失败',
-      description: '无法加载用户列表',
-      color: 'error',
-    });
-  } finally {
-    loading.value = false;
-  }
-}, 400);
-
 const openCreateModal = async () => {
   const instance = modalUserDetail.open({
     mode: 'create',
   });
 
   if (await instance.result) {
-    await loadUsers();
+    await refreshUsers();
   }
 };
 
@@ -220,7 +195,7 @@ const openEditModal = async (user: AdminUserListRes) => {
   });
 
   if (await instance.result) {
-    await loadUsers();
+    await refreshUsers();
   }
 };
 
@@ -229,7 +204,7 @@ const confirmDelete = async (user: AdminUserListRes) => {
     title: `删除用户 ${user.username}`,
     description: `确定要删除用户 ${user.username} 吗？此操作不可逆。`,
     ok: async () => {
-      await http.delete(`/admin/user/${user.id}`);
+      await http.delete(`/api/admin/user/${user.id}`);
       toast.add({
         title: '删除成功',
         description: '用户已被删除',
@@ -242,13 +217,8 @@ const confirmDelete = async (user: AdminUserListRes) => {
     return;
   }
 
-  await loadUsers();
+  await refreshUsers();
 };
-
-// 页面加载时获取数据
-onMounted(() => {
-  loadUsers();
-});
 
 // 页面标题
 useHead({

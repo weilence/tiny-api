@@ -35,7 +35,7 @@ const userSearch = useDebounceFn(async (val: string) => {
     controller = new AbortController();
     searching.value = true;
     try {
-      const res = await http.get<UserLite[]>('/user/search', { query: val, signal: controller.signal });
+      const res = await http.get('/api/user/search', { query: val, signal: controller.signal });
       items.value = res;
     } finally {
       searching.value = false;
@@ -57,7 +57,7 @@ const roleItems: { label: string; value: MemberRole }[] = [
 const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (e: FormSubmitEvent<Schema>) => {
-  await http.post(`/group/${props.groupId}/members`, e.data);
+  await http.post(`/api/group/${props.groupId}/members`, e.data);
   emit('close', true);
 };
 </script>

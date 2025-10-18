@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { ProjectEndpointGetRes } from '~~/shared/types/project';
+
 defineProps<{
-  data: ProjectEndpointGetRes;
+  data: SerializeObject<ProjectEndpointGetRes>;
 }>();
 </script>
 

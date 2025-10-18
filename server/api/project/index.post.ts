@@ -1,4 +1,5 @@
 import { projects, projectUsers } from '~~/server/db/schema';
+import type { ProjectCreateReq } from '~~/shared/types/project';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<ProjectCreateReq>(event);

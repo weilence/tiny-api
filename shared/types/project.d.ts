@@ -1,3 +1,6 @@
+import type { InferSelectModel } from 'drizzle-orm';
+import type { endpoints } from '~~/server/db/schema';
+
 interface ProjectApiTreeGetRes {
   id: string;
   name: string;
@@ -19,12 +22,13 @@ interface ProjectApiListGetRes {
   tags: string[] | null;
 }
 
-type ProjectEndpointGetRes = InferInsertModel<typeof endpoints>;
+type ProjectEndpointGetRes = InferSelectModel<typeof endpoints>;
 
 interface EndpointResponse {
   status: number;
-  headers: Record<string, string>;
-  body: string;
+  headers: Parameter[];
+  contentType: string;
+  body?: Parameter;
 }
 
 interface Parameter {

@@ -4,7 +4,7 @@ import * as v from 'valibot';
 
 interface Props {
   mode?: 'create' | 'edit';
-  groupData?: GroupQueryRes;
+  groupData?: SerializeObject<GroupQueryRes>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -28,9 +28,9 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   if (props.mode === 'edit' && props.groupData) {
-    await http.put(`/group/${props.groupData.id}`, event.data);
+    await http.put(`/api/group/${props.groupData.id}`, event.data);
   } else {
-    await http.post('/group', event.data);
+    await http.post('/api/group', event.data);
   }
 
   emit('close', true);

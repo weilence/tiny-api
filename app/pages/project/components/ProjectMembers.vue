@@ -20,7 +20,7 @@ const roleOptions: { label: string; value: MemberRole }[] = [
 const load = async () => {
   loading.value = true;
   try {
-    const res = await http.get<ProjectMembersGetRes>(`/project/${props.projectId}/members`);
+    const res = await http.get(`/api/project/${props.projectId}/members`);
     data.value = res;
   } finally {
     loading.value = false;
@@ -38,7 +38,7 @@ const openAdd = async () => {
 };
 
 const changeRole = async (userId: string, role: MemberRole) => {
-  await http.put(`/project/${props.projectId}/members/${userId}`, { role });
+  await http.put(`/api/project/${props.projectId}/members/${userId}`, { role });
   toast.add({ title: '角色已更新', color: 'success' });
   await load();
 };
@@ -48,7 +48,7 @@ const removeMember = async (userId: string) => {
     title: '移除成员',
     description: '仅能移除项目本地成员，继承成员请前往分组编辑。',
     ok: async () => {
-      await http.delete(`/project/${props.projectId}/members/${userId}`);
+      await http.delete(`/api/project/${props.projectId}/members/${userId}`);
     },
   });
   if (await ins.result) {

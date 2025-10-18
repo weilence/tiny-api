@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { projects } from '~~/server/db/schema';
+import type { ProjectQueryRes } from '~~/shared/types/project';
 
 export default defineEventHandler(async (event) => {
   const groupId = getQuery(event).groupId as string;

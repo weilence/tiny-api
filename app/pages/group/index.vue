@@ -9,7 +9,7 @@ useHead({
   title: 'Project Management',
 });
 
-const groups = ref<GroupQueryRes[]>([]);
+const { data: groups, refresh: refreshGroups } = useApi('/api/group');
 const selectedGroup = ref<string | null>(null);
 const selectedTab = ref<string>('project');
 const items = [
@@ -27,28 +27,23 @@ const items = [
   },
 ] satisfies TabsItem[];
 
-const loadGroups = async () => {
-  const res = await http.get<GroupQueryRes[]>(`/group`);
-  groups.value = res;
-};
-
 const overlay = useOverlay();
 
 const modalGroupDetail = overlay.create(ModalGroupDetail);
 const createGroup = async () => {
   const instance = modalGroupDetail.open();
   if (await instance.result) {
-    await loadGroups();
+    await refreshGroups();
   }
 };
 
-const editGroup = async (group: GroupQueryRes) => {
+const editGroup = async (group: SerializeObject<GroupQueryRes>) => {
   const instance = modalGroupDetail.open({
     mode: 'edit',
     groupData: group,
   });
   if (await instance.result) {
-    await loadGroups();
+    await refreshGroups();
   }
 };
 
@@ -59,11 +54,11 @@ const deleteGroup = async (groupId: string) => {
     title: 'Delete Group',
     description: 'Are you sure you want to delete this group? This action cannot be undone.',
     ok: async () => {
-      await http.delete(`/group/${groupId}`);
+      await http.delete(`/api/group/${groupId}`);
       if (selectedGroup.value === groupId) {
         selectedGroup.value = null;
       }
-      await loadGroups();
+      await refreshGroups();
     },
   });
 
@@ -79,7 +74,7 @@ const deleteGroup = async (groupId: string) => {
 };
 
 onMounted(async () => {
-  await loadGroups();
+  await refreshGroups();
 });
 </script>
 

@@ -44,7 +44,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   loading.value = true;
 
   try {
-    const response = await http.post('/system/init', {
+    const response = await http.post('/api/system/init', {
       username: event.data.username,
       email: event.data.email,
       password: event.data.password,
