@@ -4,9 +4,8 @@ import ProjectMembers from './components/ProjectMembers.vue';
 import ProjectApiTable from './components/ProjectApiTable.vue';
 import ProjectPreview from './components/ProjectPreview.vue';
 import ProjectEdit from './components/ProjectEdit.vue';
-import ProjectRun from './components/ProjectRun.vue';
 import ProjectMock from './components/ProjectMock.vue';
-import type { ProjectApiListGetRes, ProjectEndpointGetRes } from '~~/shared/types/project';
+import USpin from '~/components/USpin.vue';
 
 useHead({
   title: 'Project Detail',
@@ -34,23 +33,18 @@ const sendRequest = () => {
   console.log('发送请求:', apiDetail.value);
 };
 
-const apiList = ref<ProjectApiListGetRes[]>([]);
-const apiDetail = ref<SerializeObject<ProjectEndpointGetRes>>();
-
-watch(
-  () => treeSelected.value,
-  async (v) => {
-    if (v && !v.isFolder) {
-      const res = await http.get(`/api/project/${projectId}/endpoint`, { endpointId: v?.id });
-      apiDetail.value = res;
-      apiList.value = [];
-    } else {
-      const res = await http.get(`/api/project/${projectId}/api-list`, { groupId: v?.id });
-      apiList.value = res;
-      apiDetail.value = undefined;
+const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
+  async () => {
+    if (!treeSelected.value || treeSelected.value.isFolder) {
+      return undefined;
     }
+
+    const res = await http.get(`/api/project/${projectId}/endpoint`, {
+      endpointId: treeSelected.value?.id,
+    });
+    return res;
   },
-  { immediate: true }
+  { watch: [treeSelected] }
 );
 </script>
 
@@ -64,15 +58,20 @@ watch(
       </nav>
     </div>
 
-    <UTabs v-model="selectedMain" :items="mainTabs" class="w-full">
+    <UTabs v-model="selectedMain" :items="mainTabs" :unmount-on-hide="false" class="w-full">
       <template #api>
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
             <ProjectApiTree v-model="treeSelected" :project-id="projectId" :items="treeItems" :loading="loading" />
           </div>
 
-          <UCard v-if="apiDetail" class="min-w-0 flex-[2_1_66.67%]">
-            <template #header>
+          <USpin
+            v-if="treeSelected && !treeSelected.isFolder"
+            :spinning="apiDetailPending"
+            size="large"
+            class="min-w-0 flex-[2_1_66.67%]"
+          >
+            <UCard v-if="apiDetail" class="min-w-0 flex-[2_1_66.67%]">
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
@@ -116,39 +115,35 @@ watch(
                   </div>
                 </div>
               </div>
-            </template>
 
-            <UTabs
-              :items="[
-                { slot: 'preview', label: 'Preview' },
-                { slot: 'edit', label: 'Edit' },
-                { slot: 'run', label: 'Run' },
-                { slot: 'mock', label: 'Mock' },
-              ]"
-              class="mb-6"
-            >
-              <template #preview>
-                <ProjectPreview :data="apiDetail" />
-              </template>
+              <UTabs
+                :items="[
+                  { slot: 'preview', label: 'Preview' },
+                  { slot: 'edit', label: 'Edit' },
+                  { slot: 'mock', label: 'Mock' },
+                ]"
+                class="mb-6"
+                :unmount-on-hide="false"
+              >
+                <template #preview>
+                  <ProjectPreview :data="apiDetail" />
+                </template>
 
-              <template #edit>
-                <ProjectEdit v-model="apiDetail" />
-              </template>
+                <template #edit>
+                  <ProjectEdit v-model="apiDetail" />
+                </template>
 
-              <template #run>
-                <ProjectRun :data="apiDetail" />
-              </template>
-
-              <template #mock>
-                <ProjectMock />
-              </template>
-            </UTabs>
-          </UCard>
+                <template #mock>
+                  <ProjectMock />
+                </template>
+              </UTabs>
+            </UCard>
+          </USpin>
           <div v-else class="min-w-0 flex-[2_1_66.67%]">
             <ProjectApiTable
-              :data="apiList"
+              :project-id="projectId"
+              :group-id="treeSelected?.id"
               :group-items="groupItems"
-              :loading="loading"
               @select="treeSelected = { id: $event.id, name: $event.name, isFolder: false }"
             />
           </div>

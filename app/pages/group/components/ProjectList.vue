@@ -6,23 +6,22 @@ import type { ProjectQueryRes } from '~~/shared/types/project';
 const props = defineProps<{
   groupId: string | null;
 }>();
-const projects = ref<SerializeObject<ProjectQueryRes>[]>([]);
 
-const loadGroup = async (groupId: string) => {
-  const res = await http.get(`/api/project`, { groupId });
-  projects.value = res;
-};
-
-watch(
-  () => props.groupId,
-  async (newGroupId) => {
-    if (newGroupId) {
-      await loadGroup(newGroupId);
-    } else {
-      projects.value = [];
+const {
+  data: projects,
+  refresh: refreshProjects,
+  pending,
+} = useAsyncData(
+  async () => {
+    if (!props.groupId) {
+      return [];
     }
+    const res = await http.get(`/api/project`, {
+      groupId: props.groupId,
+    });
+    return res;
   },
-  { immediate: true }
+  { watch: [() => props.groupId] },
 );
 
 const overlay = useOverlay();
@@ -43,7 +42,7 @@ const createProject = async () => {
     groupId: props.groupId,
   });
   if (await instance.result) {
-    await loadGroup(props.groupId);
+    await refreshProjects();
   }
 };
 
@@ -63,7 +62,7 @@ const editProject = async (project: SerializeObject<ProjectQueryRes>) => {
     groupId: props.groupId,
   });
   if (await instance.result) {
-    await loadGroup(props.groupId);
+    await refreshProjects();
   }
 };
 
@@ -94,7 +93,7 @@ const deleteProject = async (projectId: string) => {
     return;
   }
 
-  await loadGroup(props.groupId);
+  await refreshProjects();
 };
 
 const navigateToProject = (projectId: string) => {
@@ -119,7 +118,7 @@ const navigateToProject = (projectId: string) => {
         </UButton>
       </div>
     </template>
-    <div v-if="!props.groupId" class="py-16 text-center text-muted">请先选择分组</div>
+    <div v-if="pending" class="py-16 text-center text-muted">Loading projects...</div>
     <div v-else class="grid grid-cols-6 gap-4 p-4">
       <div
         v-for="project in projects"

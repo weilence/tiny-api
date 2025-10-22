@@ -3,10 +3,6 @@ import { ModalConfirmDelete } from '#components';
 import ModalGroupMemberAdd from './ModalGroupMemberAdd.vue';
 const props = defineProps<{ groupId: string | null }>();
 
-const loading = ref(false);
-const selfRole = ref<MemberRole>('GUEST');
-const members = ref<GroupMemberRes[]>([]);
-const canManage = computed(() => ['ADMIN'].includes(selfRole.value));
 const toast = useToast();
 const overlay = useOverlay();
 const confirmDelete = overlay.create(ModalConfirmDelete);
@@ -18,23 +14,20 @@ const roleOptions: { label: string; value: MemberRole }[] = [
   { label: 'GUEST', value: 'GUEST' },
 ];
 
-const load = async () => {
-  if (!props.groupId) {
-    members.value = [];
-    selfRole.value = 'GUEST';
-    return;
-  }
-  loading.value = true;
-  try {
-    const res = await http.get(`/api/group/${props.groupId}/members`);
-    members.value = res.members;
-    selfRole.value = res.selfRole;
-  } finally {
-    loading.value = false;
-  }
-};
+const { data, refresh, pending } = useAsyncData(
+  async () => {
+    if (!props.groupId) {
+      return null;
+    }
 
-watch(() => props.groupId, load, { immediate: true });
+    const res = await http.get(`/api/group/${props.groupId}/members`);
+    return res;
+  },
+  { watch: [() => props.groupId] }
+);
+const members = computed(() => data.value?.members || []);
+const selfRole = computed(() => data.value?.selfRole || 'GUEST');
+const canManage = computed(() => ['ADMIN'].includes(selfRole.value));
 
 const openAdd = async () => {
   if (!props.groupId) {
@@ -44,7 +37,7 @@ const openAdd = async () => {
   const ins = modalAdd.open({ groupId: props.groupId });
   if (await ins.result) {
     toast.add({ title: '已添加成员', color: 'success' });
-    await load();
+    await refresh();
   }
 };
 
@@ -52,7 +45,7 @@ const changeRole = async (userId: string, role: MemberRole) => {
   if (!props.groupId) return;
   await http.put(`/api/group/${props.groupId}/members/${userId}`, { role });
   toast.add({ title: '角色已更新', color: 'success' });
-  await load();
+  await refresh();
 };
 
 const removeMember = async (userId: string) => {
@@ -66,7 +59,7 @@ const removeMember = async (userId: string) => {
   });
   if (await ins.result) {
     toast.add({ title: '已移除', color: 'success' });
-    await load();
+    await refresh();
   }
 };
 </script>
@@ -83,7 +76,7 @@ const removeMember = async (userId: string) => {
     </template>
     <div v-if="!props.groupId" class="py-16 text-center text-muted">请先选择分组</div>
     <div v-else>
-      <div v-if="loading" class="py-6 text-center text-muted">加载中...</div>
+      <div v-if="pending" class="py-6 text-center text-muted">加载中...</div>
       <div v-else>
         <div v-if="members.length === 0" class="py-6 text-center text-muted">暂无成员</div>
         <div v-else class="divide-y divide-accented">

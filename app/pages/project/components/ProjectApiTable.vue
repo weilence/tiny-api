@@ -5,11 +5,21 @@ import { UBadge, UButton, USelectMenu } from '#components';
 import type { ProjectApiListGetRes } from '~~/shared/types/project';
 
 const props = defineProps<{
-  data: ProjectApiListGetRes[];
+  projectId: string;
+  groupId?: string;
   groupItems: Array<{ id: string; name: string }>;
-  loading?: boolean;
 }>();
 const emit = defineEmits<{ select: [ProjectApiListGetRes] }>();
+
+const { data, pending: loading } = useAsyncData(
+  async () => {
+    const res = await http.get(`/api/project/${props.projectId}/api-list`, {
+      groupId: props.groupId,
+    });
+    return res;
+  },
+  { watch: [() => props.groupId] }
+);
 
 const statusOptions = [
   { label: '未完成', value: 'pending' },
@@ -98,34 +108,27 @@ const pagination = ref({
 </script>
 
 <template>
-  <UCard :ui="{ body: 'p-0' }">
-    <template #header>
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-semibold">API 列表</h3>
-      </div>
-    </template>
-    <div class="w-full space-y-4 pb-4">
-      <UTable
-        ref="table"
-        v-model:pagination="pagination"
-        :loading="props.loading"
-        :data="props.data"
-        :columns="columns"
-        :get-row-id="(row) => row.id"
-        class="flex-1"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel(),
-        }"
+  <UCard>
+    <UTable
+      ref="table"
+      v-model:pagination="pagination"
+      :loading="loading"
+      :data="data"
+      :columns="columns"
+      :get-row-id="(row) => row.id"
+      class="flex-1"
+      :pagination-options="{
+        getPaginationRowModel: getPaginationRowModel(),
+      }"
+    />
+    <div class="flex justify-center border-t border-default pt-4">
+      <UPagination
+        :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+        :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+        :total="table?.tableApi?.getFilteredRowModel().rows.length"
+        show-edges
+        @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
       />
-      <div class="flex justify-center border-t border-default pt-4">
-        <UPagination
-          :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-          :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-          :total="table?.tableApi?.getFilteredRowModel().rows.length"
-          show-edges
-          @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
-        />
-      </div>
     </div>
   </UCard>
 </template>

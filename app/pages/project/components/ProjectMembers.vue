@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ModalConfirmDelete } from '#components';
 import ModalProjectMemberAdd from './ModalProjectMemberAdd.vue';
+
 const props = defineProps<{ projectId: string }>();
 
-const loading = ref(false);
-const data = ref<ProjectMembersGetRes>({ inherited: [], local: [], selfRole: 'GUEST' });
-const canManage = computed(() => ['ADMIN'].includes(data.value.selfRole));
+const { data, pending, refresh } = useApi(() => `/api/project/${props.projectId}/members`, {
+  default: () => ({ inherited: [], local: [], selfRole: 'GUEST' }),
+});
+
+const canManage = computed(() => ['ADMIN'].includes(data.value?.selfRole ?? 'GUEST'));
 const toast = useToast();
 const overlay = useOverlay();
 const confirmDelete = overlay.create(ModalConfirmDelete);
@@ -17,30 +20,18 @@ const roleOptions: { label: string; value: MemberRole }[] = [
   { label: 'GUEST', value: 'GUEST' },
 ];
 
-const load = async () => {
-  loading.value = true;
-  try {
-    const res = await http.get(`/api/project/${props.projectId}/members`);
-    data.value = res;
-  } finally {
-    loading.value = false;
-  }
-};
-
-watch(() => props.projectId, load, { immediate: true });
-
 const openAdd = async () => {
   const ins = modalAdd.open({ projectId: props.projectId });
   if (await ins.result) {
     toast.add({ title: '已添加成员', color: 'success' });
-    await load();
+    await refresh();
   }
 };
 
 const changeRole = async (userId: string, role: MemberRole) => {
   await http.put(`/api/project/${props.projectId}/members/${userId}`, { role });
   toast.add({ title: '角色已更新', color: 'success' });
-  await load();
+  await refresh();
 };
 
 const removeMember = async (userId: string) => {
@@ -53,7 +44,7 @@ const removeMember = async (userId: string) => {
   });
   if (await ins.result) {
     toast.add({ title: '已移除', color: 'success' });
-    await load();
+    await refresh();
   }
 };
 </script>
@@ -75,7 +66,7 @@ const removeMember = async (userId: string) => {
           <h4 class="font-semibold">继承自分组</h4>
           <UBadge variant="soft" color="neutral">只读</UBadge>
         </div>
-        <div v-if="loading" class="py-4 text-center text-muted">加载中...</div>
+        <div v-if="pending" class="py-4 text-center text-muted">加载中...</div>
         <div v-else class="divide-y divide-accented">
           <div v-for="m in data.inherited" :key="m.user.id" class="grid grid-cols-12 items-center py-3">
             <div class="col-span-6 flex items-center gap-3">
@@ -97,7 +88,7 @@ const removeMember = async (userId: string) => {
           <h4 class="font-semibold">项目成员</h4>
           <UBadge variant="soft" color="primary">可编辑</UBadge>
         </div>
-        <div v-if="loading" class="py-4 text-center text-muted">加载中...</div>
+        <div v-if="pending" class="py-4 text-center text-muted">加载中...</div>
         <div v-else class="divide-y divide-accented">
           <div v-for="m in data.local" :key="m.user.id" class="grid grid-cols-12 items-center py-3">
             <div class="col-span-6 flex items-center gap-3">

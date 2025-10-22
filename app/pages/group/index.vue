@@ -79,7 +79,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
+  <div class="grid grid-cols-12 gap-6 min-h-[calc(100vh-var(--ui-header-height)-var(--spacing)*12)]">
     <div class="col-span-4">
       <UCard class="h-full">
         <template #header>
@@ -137,12 +137,15 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-8">
-      <UTabs v-model="selectedTab" :items="items" class="w-full">
+      <UTabs v-model="selectedTab" :items="items" :unmount-on-hide="false" class="w-full">
         <template #project>
           <ProjectList :group-id="selectedGroup" />
         </template>
         <template #member>
           <GroupMembers :group-id="selectedGroup" />
+        </template>
+        <template #content>
+          <div class="py-16 text-center text-muted">Please select a group first</div>
         </template>
       </UTabs>
     </div>

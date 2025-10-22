@@ -113,7 +113,7 @@ const importApi = async () => {
       :get-key="(m) => m.id"
       virtualize
       :items="filteredEndpoints"
-      class="max-h-[calc(100vh-18rem)] overflow-y-auto"
+      class="max-h-[calc(100vh-var(--ui-header-height)-var(--spacing)*51)] overflow-y-auto"
     >
       <template #item-leading="{ item }">
         <UBadge

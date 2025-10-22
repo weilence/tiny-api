@@ -36,14 +36,14 @@ defineProps<{
     <div v-if="data.response && data.response.length > 0">
       <h3 class="font-semibold mb-3 pb-2 border-b border-accented">返回数据</h3>
       <UTabs
-        :default-value="data.response[0]!.status.toString()"
+        :default-value="data.response[0]!.status"
         :items="
           data.response.map((r) => {
-            return { label: r.status.toString(), value: r.status.toString(), slot: r.status.toString() };
+            return { label: r.status.toString(), value: r.status, body: r.body };
           })
         "
       >
-        <template v-for="item in data.response" #[item.status.toString()] :key="item.status">
+        <template #content="{ item }">
           <ParameterTreeTable :parameters="item.body?.children ?? []" />
         </template>
       </UTabs>
