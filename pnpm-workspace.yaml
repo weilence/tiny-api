@@ -1,0 +1,12 @@
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@scarf/scarf'
+  - '@tree-sitter-grammars/tree-sitter-yaml'
+  - argon2
+  - core-js-pure
+  - esbuild
+  - sharp
+  - tree-sitter
+  - tree-sitter-json
+  - unrs-resolver
+  - vue-demi

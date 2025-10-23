@@ -76,8 +76,8 @@ import { ModalConfirmDelete, UBadge, UButton } from '#components';
 import ModalUserDetail from './components/ModalUserDetail.vue';
 import { useDebounce } from '@vueuse/core';
 
-// 页面元数据
-definePageMeta({
+// 页面标题
+useHead({
   title: '用户管理',
 });
 
@@ -114,8 +114,8 @@ const columns: TableColumn<AdminUserListRes>[] = [
     header: '用户信息',
     cell: ({ row }) => (
       <div class="flex items-center">
-        <div class="flex-shrink-0 h-10 w-10">
-          <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+        <div class="shrink-0 h-10 w-10">
+          <div class="h-10 w-10 rounded-full bg-linear-to-r from-blue-500 to-purple-600 flex items-center justify-center">
             <span class="text-sm font-medium text-white">{row.original.username.charAt(0).toUpperCase()}</span>
           </div>
         </div>
@@ -219,9 +219,4 @@ const confirmDelete = async (user: AdminUserListRes) => {
 
   await refreshUsers();
 };
-
-// 页面标题
-useHead({
-  title: '用户管理',
-});
 </script>

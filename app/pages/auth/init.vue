@@ -2,10 +2,14 @@
 import * as v from 'valibot';
 import type { FormSubmitEvent } from '@nuxt/ui';
 
+// 页面标题
+useHead({
+  title: '系统初始化',
+});
+
 // 页面元数据
 definePageMeta({
   layout: false,
-  title: '系统初始化',
 });
 
 // 表单验证模式
@@ -77,10 +81,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
 }
 
-// 页面标题
-useHead({
-  title: '系统初始化',
-});
 </script>
 
 <template>
@@ -168,7 +168,7 @@ useHead({
 
         <div class="bg-info/10 border border-info rounded-lg p-4">
           <div class="flex">
-            <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-info mr-2 mt-0.5 flex-shrink-0" />
+            <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-info mr-2 mt-0.5 shrink-0" />
             <div class="text-sm text-info">
               <p class="font-medium mb-1">重要提示：</p>
               <ul class="list-disc list-inside space-y-1">
