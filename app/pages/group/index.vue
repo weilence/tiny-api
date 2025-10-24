@@ -108,13 +108,13 @@ onMounted(async () => {
                   <span class="font-medium" :class="group.id == selectedGroup ? 'text-primary' : ''">
                     {{ group.name }}
                   </span>
-                  <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                  <div v-if="group.id == selectedGroup" class="w-2 h-2 bg-primary rounded-full shrink-0" />
                 </div>
                 <p v-if="group.description" class="text-xs text-muted mt-1 line-clamp-2 break-all">
                   {{ group.description }}
                 </p>
               </div>
-              <div v-if="group.id == selectedGroup" class="flex items-center space-x-1 ml-2 flex-shrink-0">
+              <div v-if="group.id == selectedGroup" class="flex items-center space-x-1 ml-2 shrink-0">
                 <UButton
                   icon="i-heroicons-pencil-square"
                   size="xs"

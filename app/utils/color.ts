@@ -1,3 +1,5 @@
+import type { HttpMethod } from '~~/shared/types/project';
+
 export const getColor = (method: HttpMethod) => {
   switch (method) {
     case 'GET':
