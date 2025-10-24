@@ -42,6 +42,7 @@ defineProps<{
             return { label: r.status.toString(), value: r.status, body: r.body };
           })
         "
+        variant="link"
       >
         <template #content="{ item }">
           <ParameterTreeTable :parameters="item.body?.children ?? []" />

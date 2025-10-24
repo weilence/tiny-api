@@ -137,7 +137,7 @@ onMounted(async () => {
     </div>
 
     <div class="col-span-8">
-      <UTabs v-model="selectedTab" :items="items" :unmount-on-hide="false" class="w-full">
+      <UTabs v-model="selectedTab" :items="items" :unmount-on-hide="false">
         <template #project>
           <ProjectList :group-id="selectedGroup" />
         </template>

@@ -114,10 +114,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description="Enter your credentials to create your account."
     icon="i-lucide-user"
     :fields="fields"
-    @submit="onSubmit"
     :submit="{
       loading: loading,
     }"
+    @submit="onSubmit"
   >
     <template #description>
       Already have an account? <ULink to="/auth/login" class="text-primary hover:text-primary-500">Log in</ULink>.

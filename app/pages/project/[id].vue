@@ -58,7 +58,7 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
       </nav>
     </div>
 
-    <UTabs v-model="selectedMain" :items="mainTabs" :unmount-on-hide="false" class="w-full">
+    <UTabs v-model="selectedMain" :items="mainTabs" :unmount-on-hide="false">
       <template #api>
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">

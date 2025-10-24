@@ -37,7 +37,7 @@ const fields: AuthFormField[] = [
       { label: 'Local Account', value: 'local' },
       { label: 'LDAP', value: 'ldap' },
     ] as SelectItem[],
-    // @ts-expect-error
+    // @ts-expect-error workaround for nuxt/ui types
     valueKey: 'value',
     defaultValue: 'local',
     required: true,
@@ -106,10 +106,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     description="Enter your credentials to access your account."
     icon="i-lucide-user"
     :fields="fields"
-    @submit="onSubmit"
     :submit="{
       loading: loading,
     }"
+    @submit="onSubmit"
   >
     <template #description>
       Don't have an account? <ULink to="/auth/register" class="text-primary hover:text-primary-500">Sign up</ULink>.
