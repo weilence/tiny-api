@@ -24,6 +24,19 @@ interface ProjectApiListGetRes {
 
 type ProjectEndpointGetRes = InferSelectModel<typeof endpoints>;
 
+// 更新接口的请求体（全部为可选，服务端按提供的字段更新）
+interface EndpointUpdateReq {
+  name?: string;
+  description?: string | null;
+  method?: HttpMethod | null;
+  path?: string | null;
+  tags?: string[] | null;
+  headers?: Parameter[] | null;
+  queryParams?: Parameter[] | null;
+  body?: Parameter | null;
+  response?: EndpointResponse[] | null;
+}
+
 interface EndpointResponse {
   status: number;
   headers: Parameter[];

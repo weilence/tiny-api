@@ -2,8 +2,7 @@
 import ProjectApiTree from './components/ProjectApiTree.vue';
 import ProjectMembers from './components/ProjectMembers.vue';
 import ProjectApiTable from './components/ProjectApiTable.vue';
-import ProjectPreview from './components/ProjectPreview.vue';
-import ProjectEdit from './components/ProjectEdit.vue';
+import ProjectContent from './components/ProjectContent.vue';
 import ProjectMock from './components/ProjectMock.vue';
 import USpin from '~/components/USpin.vue';
 
@@ -15,13 +14,19 @@ const route = useRoute();
 const projectId = route.params.id as string;
 
 const treeSelected = ref<{ id: string; name: string; isFolder: boolean }>();
-const { data: projectData, pending: loading } = useApi(`/api/project/${projectId}/api-tree`, {
+const { data: projectData, pending: loading, refresh: refreshApiTree } = useApi(`/api/project/${projectId}/api-tree`, {
   onResponse: () => {
     treeSelected.value = undefined;
   },
 });
 const treeItems = computed(() => projectData.value?.tree || []);
 const groupItems = computed(() => projectData.value?.groups || []);
+
+// 处理 API 树重新加载
+const handleReloadApiTree = async () => {
+  treeSelected.value = undefined;
+  await refreshApiTree();
+};
 
 const selectedMain = ref('api');
 const mainTabs = [
@@ -32,6 +37,8 @@ const mainTabs = [
 const sendRequest = () => {
   console.log('发送请求:', apiDetail.value);
 };
+
+const isEditMode = ref(false);
 
 const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
   async () => {
@@ -62,7 +69,7 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
       <template #api>
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
-            <ProjectApiTree v-model="treeSelected" :project-id="projectId" :items="treeItems" :loading="loading" />
+            <ProjectApiTree v-model="treeSelected" :project-id="projectId" :items="treeItems" :loading="loading" @reload="handleReloadApiTree" />
           </div>
 
           <USpin
@@ -80,7 +87,11 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
                     </UBadge>
                     <h2 class="text-lg font-semibold">{{ apiDetail.name }}</h2>
                   </div>
-                  <UButton color="primary" variant="solid" @click="sendRequest">Send Request</UButton>
+                  <div class="flex items-center space-x-3">
+                    <USwitch v-model="isEditMode" />
+                    <span class="text-sm text-muted">{{ isEditMode ? '编辑模式' : '预览模式' }}</span>
+                    <UButton color="primary" variant="solid" @click="sendRequest">Send Request</UButton>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 text-sm">
@@ -118,19 +129,14 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
 
               <UTabs
                 :items="[
-                  { slot: 'preview', label: 'Preview' },
-                  { slot: 'edit', label: 'Edit' },
+                  { slot: 'content', label: 'Content' },
                   { slot: 'mock', label: 'Mock' },
                 ]"
                 class="mb-6"
                 :unmount-on-hide="false"
               >
-                <template #preview>
-                  <ProjectPreview :data="apiDetail" />
-                </template>
-
-                <template #edit>
-                  <ProjectEdit v-model="apiDetail" />
+                <template #content>
+                  <ProjectContent v-model="apiDetail" :edit="isEditMode" />
                 </template>
 
                 <template #mock>

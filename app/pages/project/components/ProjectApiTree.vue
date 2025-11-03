@@ -65,12 +65,19 @@ const getHighlightedText = (text: string, query: string) => {
 };
 
 const overlay = useOverlay();
+const toast = useToast();
 const modalImportApi = overlay.create(ModalImportApi);
 const importApi = async () => {
   const instance = modalImportApi.open({
     projectId: props.projectId,
   });
   if (await instance.result) {
+    toast.add({
+      title: '导入成功',
+      description: 'API 接口已成功导入',
+      color: 'success',
+      duration: 3000,
+    });
     emits('reload');
   }
 };

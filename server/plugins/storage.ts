@@ -4,7 +4,7 @@ export default defineNitroPlugin(() => {
   const storage = useStorage();
 
   const driver = redisDriver({
-    ...useRuntimeConfig().redis,
+    url: useRuntimeConfig().redisUrl,
     base: 'redis',
   });
 

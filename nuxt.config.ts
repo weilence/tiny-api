@@ -18,13 +18,10 @@ export default defineNuxtConfig({
   ssr: false,
 
   runtimeConfig: {
-    public: {},
-    databaseUrl: '',
-    redis: {
-      host: '127.0.0.1',
-      port: 6379,
-      password: '',
-      db: 0,
+    public: {
+      allowRegister: true,
     },
+    databaseUrl: 'postgresql://postgres:123456@localhost:5432/api-doc',
+    redisUrl: 'redis://localhost:6379',
   },
 });

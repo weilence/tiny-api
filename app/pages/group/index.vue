@@ -76,6 +76,30 @@ const deleteGroup = async (groupId: string) => {
 onMounted(async () => {
   await refreshGroups();
 });
+
+// 默认选中第一项分组（在数据加载或变更后触发）
+watch(
+  () => groups.value,
+  (list: any) => {
+    if (!selectedGroup.value && Array.isArray(list) && list.length > 0) {
+      selectedGroup.value = list[0].id as string;
+    }
+  },
+  { immediate: true }
+);
+ 
+// 当选中的组被删除后，refreshGroups 将触发上面的 watch 重新选择第一项
+watch(
+  selectedGroup,
+  (val) => {
+    if (val === null) {
+      const list = (groups.value ?? []) as any[];
+      if (Array.isArray(list) && list.length > 0) {
+        selectedGroup.value = list[0].id as string;
+      }
+    }
+  }
+);
 </script>
 
 <template>
