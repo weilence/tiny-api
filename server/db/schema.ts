@@ -10,9 +10,9 @@ export const groups = pgTable('Group', {
   id: uuid().defaultRandom().primaryKey(),
   name: text().notNull(),
   description: text(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp()
-    .$onUpdate(() => new Date())
+  createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string' })
+    .$onUpdate(() => new Date().toUTCString())
     .notNull(),
 });
 
@@ -25,9 +25,9 @@ export const projects = pgTable('Project', {
   id: uuid().defaultRandom().primaryKey(),
   name: text().notNull(),
   description: text(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp()
-    .$onUpdate(() => new Date())
+  createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string' })
+    .$onUpdate(() => new Date().toUTCString())
     .notNull(),
   groupId: uuid()
     .notNull()
@@ -54,9 +54,9 @@ export const endpointGroups = pgTable(
     projectId: uuid()
       .notNull()
       .references(() => projects.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
-    createdAt: timestamp().defaultNow().notNull(),
-    updatedAt: timestamp()
-      .$onUpdate(() => new Date())
+    createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp({ mode: 'string' })
+      .$onUpdate(() => new Date().toUTCString())
       .notNull(),
   },
   (table) => [
@@ -88,12 +88,12 @@ export const users = pgTable('User', {
   username: text().notNull().unique(),
   password: text().notNull(),
   name: text(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp()
-    .$onUpdate(() => new Date())
+  createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string' })
+    .$onUpdate(() => new Date().toUTCString())
     .notNull(),
   role: userRole().default('MEMBER').notNull(),
-  lastLoginAt: timestamp(),
+  lastLoginAt: timestamp({ mode: 'string' }),
 });
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -110,9 +110,9 @@ export const endpoints = pgTable('Endpoint', {
   tags: text().array().default([]),
   body: jsonb().$type<Parameter>(),
   response: jsonb().$type<EndpointResponse[]>(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp()
-    .$onUpdate(() => new Date())
+  createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string' })
+    .$onUpdate(() => new Date().toUTCString())
     .notNull(),
   groupId: uuid()
     .notNull()
@@ -132,9 +132,9 @@ export const settings = pgTable('Setting', {
   id: uuid().defaultRandom().primaryKey(),
   key: text().notNull().unique(),
   value: jsonb().notNull(),
-  createdAt: timestamp().defaultNow().notNull(),
-  updatedAt: timestamp()
-    .$onUpdate(() => new Date())
+  createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'string' })
+    .$onUpdate(() => new Date().toUTCString())
     .notNull(),
 });
 

@@ -19,5 +19,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: '接口未找到' });
   }
 
-  return endpoint;
+  return {
+    ...endpoint,
+    headers: endpoint.headers || [],
+    queryParams: endpoint.queryParams || [],
+    body: endpoint.body || null,
+    response: endpoint.response || [],
+  };
 });

@@ -14,7 +14,11 @@ const route = useRoute();
 const projectId = route.params.id as string;
 
 const treeSelected = ref<{ id: string; name: string; isFolder: boolean }>();
-const { data: projectData, pending: loading, refresh: refreshApiTree } = useApi(`/api/project/${projectId}/api-tree`, {
+const {
+  data: projectData,
+  pending: loading,
+  refresh: refreshApiTree,
+} = useApi(`/api/project/${projectId}/api-tree`, {
   onResponse: () => {
     treeSelected.value = undefined;
   },
@@ -34,13 +38,13 @@ const mainTabs = [
   { label: '成员', value: 'members', slot: 'members' },
 ];
 
-const sendRequest = () => {
-  console.log('发送请求:', apiDetail.value);
-};
-
 const isEditMode = ref(false);
 
-const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
+const {
+  data: apiDetail,
+  pending: apiDetailPending,
+  refresh: refreshApiDetail,
+} = useAsyncData(
   async () => {
     if (!treeSelected.value || treeSelected.value.isFolder) {
       return undefined;
@@ -53,6 +57,29 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
   },
   { watch: [treeSelected] }
 );
+
+// 保存、取消
+const toast = useToast();
+const saving = ref(false);
+const onCancel = async () => {
+  await refreshApiDetail();
+  isEditMode.value = false;
+};
+
+const onSave = async () => {
+  saving.value = true;
+  try {
+    await http.put(`/api/project/${projectId}/endpoint`, apiDetail.value);
+    await refreshApiDetail();
+    isEditMode.value = false;
+    toast.add({ title: '保存成功', color: 'primary' });
+  } catch (e) {
+    console.error(e);
+    toast.add({ title: '保存失败', color: 'error' });
+  } finally {
+    saving.value = false;
+  }
+};
 </script>
 
 <template>
@@ -69,7 +96,13 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
       <template #api>
         <div class="flex gap-6">
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
-            <ProjectApiTree v-model="treeSelected" :project-id="projectId" :items="treeItems" :loading="loading" @reload="handleReloadApiTree" />
+            <ProjectApiTree
+              v-model="treeSelected"
+              :project-id="projectId"
+              :items="treeItems"
+              :loading="loading"
+              @reload="handleReloadApiTree"
+            />
           </div>
 
           <USpin
@@ -88,16 +121,29 @@ const { data: apiDetail, pending: apiDetailPending } = useAsyncData(
                     <h2 class="text-lg font-semibold">{{ apiDetail.name }}</h2>
                   </div>
                   <div class="flex items-center space-x-3">
-                    <USwitch v-model="isEditMode" />
-                    <span class="text-sm text-muted">{{ isEditMode ? '编辑模式' : '预览模式' }}</span>
-                    <UButton color="primary" variant="solid" @click="sendRequest">Send Request</UButton>
+                    <div v-if="isEditMode" class="flex items-center justify-end gap-2">
+                      <UButton color="primary" :loading="saving" @click="onSave">保存</UButton>
+                      <UButton color="neutral" variant="soft" @click="onCancel">取消</UButton>
+                    </div>
+                    <div v-else>
+                      <UButton
+                        icon="i-heroicons-pencil-square"
+                        size="sm"
+                        color="info"
+                        variant="ghost"
+                        @click="isEditMode = true"
+                      >
+                        Edit
+                      </UButton>
+                    </div>
                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span class="font-medium mr-2">Path:</span>
-                    <span class="text-info">{{ apiDetail.path }}</span>
+                    <UInput v-if="isEditMode" v-model="apiDetail.path" size="sm" />
+                    <span v-else class="text-info">{{ apiDetail.path }}</span>
                   </div>
                   <div class="flex items-center space-x-2">
                     <span class="font-medium mr-2">Creator:</span>

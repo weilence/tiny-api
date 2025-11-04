@@ -1,5 +1,4 @@
-import type { InferSelectModel } from 'drizzle-orm';
-import type { endpoints } from '~~/server/db/schema';
+import type { FetchResult } from '#app';
 
 interface ProjectApiTreeGetRes {
   id: string;
@@ -22,7 +21,7 @@ interface ProjectApiListGetRes {
   tags: string[] | null;
 }
 
-type ProjectEndpointGetRes = InferSelectModel<typeof endpoints>;
+type ProjectEndpointGetRes = FetchResult<'/api/project/:id/endpoint', 'GET'>;
 
 // 更新接口的请求体（全部为可选，服务端按提供的字段更新）
 interface EndpointUpdateReq {

@@ -20,3 +20,7 @@ button:not(:disabled) {
 .text-link {
   @apply text-primary-600 hover:text-primary-500 cursor-pointer;
 }
+
+:root {
+  --ui-container: 100%;
+}
