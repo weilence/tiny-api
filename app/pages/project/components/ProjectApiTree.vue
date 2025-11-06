@@ -76,7 +76,6 @@ const importApi = async () => {
       title: '导入成功',
       description: 'API 接口已成功导入',
       color: 'success',
-      duration: 3000,
     });
     emits('reload');
   }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { UButton } from '#components';
 import type { TableColumn } from '@nuxt/ui';
+import { useClipboard } from '@vueuse/core';
 import type { Parameter } from '~~/shared/types/project';
 
 const model = defineModel<Parameter[]>({
@@ -41,17 +42,6 @@ const columns: TableColumn<Parameter>[] = [
   {
     id: 'description',
     header: '说明',
-    accessorFn: (param: Parameter) => {
-      const text: string[] = [];
-      if (param.options) {
-        text.push(`枚举值: ${param.options.join(', ')}`);
-      }
-      if (param.description) {
-        text.push(param.description);
-      }
-      const description = text.length > 0 ? text.join('\b') : '';
-      return description;
-    },
   },
 ];
 
@@ -102,6 +92,15 @@ const addRoot = () => {
 };
 
 const expanded = ref<Record<string, boolean>>({});
+const { copy } = useClipboard();
+const toast = useToast();
+const copyText = (text: string) => {
+  copy(text);
+  toast.add({
+    title: '已复制到剪贴板',
+    color: 'success',
+  });
+};
 </script>
 
 <template>
@@ -124,7 +123,6 @@ const expanded = ref<Record<string, boolean>>({});
           <UButton
             color="neutral"
             variant="outline"
-            size="xs"
             :icon="row.getIsExpanded() ? 'i-lucide-minus' : 'i-lucide-plus'"
             :class="!row.getCanExpand() && 'invisible'"
             :ui="{
@@ -134,11 +132,10 @@ const expanded = ref<Record<string, boolean>>({});
             @click="row.toggleExpanded()"
           />
           <template v-if="isEdit">
-            <UInput v-model="row.original.key" size="xs" class="w-40" placeholder="参数名" />
+            <UInput v-model="row.original.key" class="w-40" placeholder="参数名" />
             <UButton
               v-if="expanded"
               icon="i-heroicons-plus"
-              size="xs"
               color="primary"
               variant="ghost"
               :ui="{ leadingIcon: 'size-4' }"
@@ -147,7 +144,6 @@ const expanded = ref<Record<string, boolean>>({});
             <UButton
               v-if="expanded"
               icon="i-heroicons-trash"
-              size="xs"
               color="error"
               variant="ghost"
               :ui="{ leadingIcon: 'size-4' }"
@@ -161,8 +157,13 @@ const expanded = ref<Record<string, boolean>>({});
       <template #type-cell="{ row }">
         <template v-if="isEdit">
           <div class="flex items-center gap-2">
-            <UInput v-model="row.original.type" size="xs" class="w-28" placeholder="类型" />
-            <USwitch v-model="row.original.isArray" size="xs" />
+            <USelect
+              v-model="row.original.type"
+              class="w-28"
+              placeholder="类型"
+              :items="['integer', 'number', 'string', 'boolean', 'object']"
+            />
+            <USwitch v-model="row.original.isArray" />
             <span class="text-xs text-muted">数组</span>
           </div>
         </template>
@@ -173,21 +174,38 @@ const expanded = ref<Record<string, boolean>>({});
 
       <template #required-cell="{ row }">
         <template v-if="isEdit">
-          <USwitch v-model="row.original.required" size="xs" />
-          <span class="ml-1 text-xs">{{ row.original.required ? '必填' : '可选' }}</span>
-          <UBadge v-if="row.original.options" color="primary" variant="soft" size="sm" class="ml-2"> 枚举 </UBadge>
+          <div class="flex flex-col gap-2">
+            <USwitch v-model="row.original.required" :label="row.original.required ? '必填' : '可选'" />
+            <UInputTags v-model="row.original.options" class="w-60">枚举</UInputTags>
+          </div>
         </template>
         <template v-else>
-          <UBadge :color="row.original.required ? 'error' : 'neutral'" variant="soft" size="sm">
+          <UBadge :color="row.original.required ? 'error' : 'neutral'" variant="soft">
             {{ row.original.required ? '必填' : '可选' }}
           </UBadge>
-          <UBadge v-if="row.original.options" color="primary" variant="soft" size="sm"> 枚举 </UBadge>
+          <UPopover v-if="row.original.options && row.original.options.length" mode="hover">
+            <UBadge color="primary" variant="soft">枚举</UBadge>
+            <template #content>
+              <div class="flex flex-wrap gap-1 max-w-xs">
+                <UBadge
+                  v-for="v in row.original.options"
+                  :key="v"
+                  variant="outline"
+                  class="cursor-pointer"
+                  title="点击复制"
+                  @click="copyText(v)"
+                >
+                  {{ v }}
+                </UBadge>
+              </div>
+            </template>
+          </UPopover>
         </template>
       </template>
 
       <template #value-cell="{ row }">
         <template v-if="isEdit">
-          <UInput v-model="row.original.value" size="xs" placeholder="示例值" />
+          <UInput v-model="row.original.value" placeholder="示例值" />
         </template>
         <template v-else>
           {{ row.getValue('value') }}
@@ -197,24 +215,12 @@ const expanded = ref<Record<string, boolean>>({});
       <template #description-cell="{ row }">
         <template v-if="isEdit">
           <div class="space-y-1">
-            <UInput
-              :model-value="(row.original.options || []).join(', ')"
-              size="xs"
-              placeholder="枚举值，逗号分隔"
-              @update:model-value="(val: string | number | null) => {
-              const s = String(val ?? '');
-              row.original.options = s
-                .split(',')
-                .map((m) => m.trim())
-                .filter(Boolean);
-            }"
-            />
             <UTextarea v-model="row.original.description" :rows="2" placeholder="说明" />
           </div>
         </template>
         <span v-else class="text-sm"> {{ row.getValue('description') }} </span>
       </template>
     </UTable>
-    <UButton v-if="isEdit" icon="i-heroicons-plus" size="xs" color="primary" block @click="addRoot">新增参数</UButton>
+    <UButton v-if="isEdit" icon="i-heroicons-plus" color="primary" block @click="addRoot">新增参数</UButton>
   </div>
 </template>

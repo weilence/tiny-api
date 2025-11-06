@@ -33,7 +33,6 @@ const createProject = async () => {
     toast.add({
       title: 'Please select a group first',
       color: 'error',
-      duration: 3000,
     });
     return;
   }
@@ -51,7 +50,6 @@ const editProject = async (project: SerializeObject<ProjectQueryRes>) => {
     toast.add({
       title: 'Please select a group first',
       color: 'error',
-      duration: 3000,
     });
     return;
   }
@@ -71,7 +69,6 @@ const deleteProject = async (projectId: string) => {
     toast.add({
       title: 'Please select a group first',
       color: 'error',
-      duration: 3000,
     });
     return;
   }
@@ -85,7 +82,6 @@ const deleteProject = async (projectId: string) => {
       toast.add({
         title: 'Project deleted successfully',
         color: 'success',
-        duration: 3000,
       });
     },
   });

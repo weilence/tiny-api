@@ -69,7 +69,6 @@ const deleteGroup = async (groupId: string) => {
   toast.add({
     title: 'Group deleted successfully',
     color: 'success',
-    duration: 3000,
   });
 };
 
