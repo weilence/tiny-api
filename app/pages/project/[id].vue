@@ -11,25 +11,96 @@ useHead({
 });
 
 const route = useRoute();
+const router = useRouter();
 const projectId = route.params.id as string;
 
 const treeSelected = ref<{ id: string; name: string; isFolder: boolean }>();
+const expandedKeys = ref<string[]>([]);  // 改为数组
+
 const {
   data: projectData,
   pending: loading,
   refresh: refreshApiTree,
-} = useApi(`/api/project/${projectId}/api-tree`, {
-  onResponse: () => {
-    treeSelected.value = undefined;
-  },
-});
+} = useApi(`/api/project/${projectId}/api-tree`);
 const treeItems = computed(() => projectData.value?.tree || []);
 const groupItems = computed(() => projectData.value?.groups || []);
 
+// 找到 endpoint 所在的分组路径（包括所有父节点）
+const findEndpointPath = (items: any[], targetId: string, path: string[] = []): string[] | null => {
+  for (const item of items) {
+    if (item.id === targetId) {
+      // 找到目标，返回当前路径（不包括目标本身）
+      return path;
+    }
+    if (item.children && item.children.length > 0) {
+      // 递归查找子节点，将当前节点加入路径
+      const found = findEndpointPath(item.children, targetId, [...path, item.id]);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// 从 URL 参数初始化选中的 API
+onMounted(() => {
+  const endpointId = route.query.endpoint as string;
+  const groupId = route.query.group as string;
+
+  if (endpointId) {
+    treeSelected.value = { id: endpointId, name: '', isFolder: false };
+  } else if (groupId) {
+    treeSelected.value = { id: groupId, name: '', isFolder: true };
+  }
+});
+
+// 当树加载完成且有 endpoint 参数时，展开到对应路径
+watch(
+  () => projectData.value,
+  (data) => {
+    const endpointId = route.query.endpoint as string;
+    if (data?.tree && endpointId) {
+      console.log('Tree data loaded:', data.tree);
+      console.log('Looking for endpoint:', endpointId);
+      const path = findEndpointPath(data.tree, endpointId);
+      console.log('Found path for endpoint:', endpointId, 'Path:', path);
+      if (path && path.length > 0) {
+        expandedKeys.value = path;  // 直接设置为路径数组
+        console.log('Expanded keys set to:', expandedKeys.value);
+      } else {
+        console.warn('No path found or path is empty');
+      }
+    }
+  },
+  { immediate: true }
+);
+
+// 监听 treeSelected 变化，更新 URL
+watch(treeSelected, (newVal) => {
+  if (newVal) {
+    const query: Record<string, string> = {};
+    if (newVal.isFolder) {
+      query.group = newVal.id;
+    } else {
+      query.endpoint = newVal.id;
+    }
+    router.replace({ query });
+  } else {
+    router.replace({ query: {} });
+  }
+});
+
 // 处理 API 树重新加载
 const handleReloadApiTree = async () => {
-  treeSelected.value = undefined;
+  const currentEndpoint = treeSelected.value?.isFolder === false ? treeSelected.value.id : undefined;
   await refreshApiTree();
+  // 重新加载后，如果之前有选中的 endpoint，保持选中状态并展开路径
+  if (currentEndpoint && projectData.value?.tree) {
+    treeSelected.value = { id: currentEndpoint, name: '', isFolder: false };
+    const path = findEndpointPath(projectData.value.tree, currentEndpoint);
+    if (path && path.length > 0) {
+      expandedKeys.value = path;  // 直接设置为路径数组
+    }
+  }
 };
 
 const selectedMain = ref('api');
@@ -98,6 +169,7 @@ const onSave = async () => {
           <div class="w-full max-w-120 min-w-0 flex-[1_1_33.33%]">
             <ProjectApiTree
               v-model="treeSelected"
+              v-model:expanded="expandedKeys"
               :project-id="projectId"
               :items="treeItems"
               :loading="loading"

@@ -12,6 +12,7 @@ const emits = defineEmits<{
 }>();
 
 const modelValue = defineModel<TreeItem>();
+const expandedModel = defineModel<string[]>('expanded');  // 改为字符串数组
 
 const searchQuery = ref('');
 const filteredEndpoints = computed(() => {
@@ -115,6 +116,7 @@ const importApi = async () => {
     <UTree
       v-if="filteredEndpoints.length > 0"
       v-model="modelValue"
+      v-model:expanded="expandedModel"
       label-key="name"
       :get-key="(m) => m.id"
       virtualize

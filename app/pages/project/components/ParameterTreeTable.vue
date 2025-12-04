@@ -31,10 +31,6 @@ const columns: TableColumn<Parameter>[] = [
     header: '类型',
   },
   {
-    id: 'required',
-    header: '属性',
-  },
-  {
     id: 'value',
     accessorFn: (param) => param.value || '-',
     header: '示例值',
@@ -60,6 +56,33 @@ const addChild = (node: Parameter) => {
     value: '',
     description: '',
   } as any);
+};
+
+const addSibling = (target: Parameter) => {
+  const root = (model.value ?? []) as Parameter[];
+  const newParam = {
+    key: '',
+    value: '',
+    type: '',
+    isArray: false,
+    required: false,
+    description: '',
+    enabled: false,
+    children: [],
+  };
+
+  const walk = (list: Parameter[]): boolean => {
+    const idx = list.indexOf(target);
+    if (idx !== -1) {
+      list.splice(idx + 1, 0, newParam);
+      return true;
+    }
+    for (const item of list) {
+      if (item.children && walk(item.children)) return true;
+    }
+    return false;
+  };
+  walk(root);
 };
 
 const removeNode = (target: Parameter) => {
@@ -118,6 +141,13 @@ const copyText = (text: string) => {
         td: 'empty:p-0 group-has-[td:not(:empty)]:border-b border-default',
       }"
     >
+      <template #empty>
+        <div v-if="isEdit" class="py-8 text-center">
+          <UButton icon="i-heroicons-plus" color="primary" @click="addRoot">新增参数</UButton>
+        </div>
+        <div v-else class="py-8 text-center text-muted">暂无数据</div>
+      </template>
+
       <template #key-cell="{ row }">
         <div class="flex items-center gap-1" :style="{ paddingLeft: `${row.depth}rem` }">
           <UButton
@@ -132,13 +162,26 @@ const copyText = (text: string) => {
             @click="row.toggleExpanded()"
           />
           <template v-if="isEdit">
-            <UInput v-model="row.original.key" class="w-40" placeholder="参数名" />
+            <div class="flex items-center gap-1">
+              <UInput v-model="row.original.key" class="w-40" placeholder="参数名" />
+              <USwitch v-model="row.original.required" size="xs" />
+            </div>
+            <UButton
+              v-if="expanded"
+              icon="i-heroicons-plus-circle"
+              color="success"
+              variant="ghost"
+              :ui="{ leadingIcon: 'size-4' }"
+              title="添加相邻节点"
+              @click="addSibling(row.original)"
+            />
             <UButton
               v-if="expanded"
               icon="i-heroicons-plus"
               color="primary"
               variant="ghost"
               :ui="{ leadingIcon: 'size-4' }"
+              title="添加子节点"
               @click="addChild(row.original)"
             />
             <UButton
@@ -147,10 +190,14 @@ const copyText = (text: string) => {
               color="error"
               variant="ghost"
               :ui="{ leadingIcon: 'size-4' }"
+              title="删除"
               @click="removeNode(row.original)"
             />
           </template>
-          <span v-else class="font-mono text-sm text-info">{{ row.original.key }}</span>
+          <div v-else class="flex items-center gap-1">
+            <span class="font-mono text-sm text-info">{{ row.original.key }}</span>
+            <span v-if="row.original.required" class="text-error">*</span>
+          </div>
         </div>
       </template>
 
@@ -163,43 +210,12 @@ const copyText = (text: string) => {
               placeholder="类型"
               :items="['integer', 'number', 'string', 'boolean', 'object']"
             />
-            <USwitch v-model="row.original.isArray" />
+            <USwitch v-model="row.original.isArray" size="xs" />
             <span class="text-xs text-muted">数组</span>
           </div>
         </template>
         <template v-else>
-          {{ row.getValue('type') }}
-        </template>
-      </template>
-
-      <template #required-cell="{ row }">
-        <template v-if="isEdit">
-          <div class="flex flex-col gap-2">
-            <USwitch v-model="row.original.required" :label="row.original.required ? '必填' : '可选'" />
-            <UInputTags v-model="row.original.options" class="w-60">枚举</UInputTags>
-          </div>
-        </template>
-        <template v-else>
-          <UBadge :color="row.original.required ? 'error' : 'neutral'" variant="soft">
-            {{ row.original.required ? '必填' : '可选' }}
-          </UBadge>
-          <UPopover v-if="row.original.options && row.original.options.length" mode="hover">
-            <UBadge color="primary" variant="soft">枚举</UBadge>
-            <template #content>
-              <div class="flex flex-wrap gap-1 max-w-xs">
-                <UBadge
-                  v-for="v in row.original.options"
-                  :key="v"
-                  variant="outline"
-                  class="cursor-pointer"
-                  title="点击复制"
-                  @click="copyText(v)"
-                >
-                  {{ v }}
-                </UBadge>
-              </div>
-            </template>
-          </UPopover>
+          {{ row.original.isArray ? `${row.original.type}[]` : row.original.type }}
         </template>
       </template>
 
@@ -208,19 +224,34 @@ const copyText = (text: string) => {
           <UInput v-model="row.original.value" placeholder="示例值" />
         </template>
         <template v-else>
-          {{ row.getValue('value') }}
+          {{ row.original.value }}
         </template>
       </template>
 
       <template #description-cell="{ row }">
         <template v-if="isEdit">
-          <div class="space-y-1">
+          <div class="flex flex-col space-y-2">
+            <UInputTags v-model="row.original.options" class="w-full" placeholder="枚举值（可选）" />
             <UTextarea v-model="row.original.description" :rows="2" placeholder="说明" />
           </div>
         </template>
-        <span v-else class="text-sm"> {{ row.getValue('description') }} </span>
+        <div v-else class="space-y-1">
+          <div v-if="row.original.options && row.original.options.length" class="flex flex-wrap items-center gap-1">
+            <span class="text-muted">枚举:</span>
+            <UBadge
+              v-for="v in row.original.options"
+              :key="v"
+              variant="outline"
+              class="cursor-pointer"
+              title="点击复制"
+              @click="copyText(v)"
+            >
+              {{ v }}
+            </UBadge>
+          </div>
+          <span>{{ row.original.description }}</span>
+        </div>
       </template>
     </UTable>
-    <UButton v-if="isEdit" icon="i-heroicons-plus" color="primary" block @click="addRoot">新增参数</UButton>
   </div>
 </template>
